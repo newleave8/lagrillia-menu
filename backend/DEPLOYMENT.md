@@ -8,7 +8,7 @@
 - Images folder: 1mMG1qmVQtdn900c_UBkwymARaH61qUXC
 - Original DB tabs copied to 원본백업_메뉴_DB, 원본백업_옵션그룹_DB, 원본백업_옵션항목_DB before missing ribeye ID and option repair.
 
-ADMIN_PIN must be set by the owner in Script Properties (12+ characters). Never put its value in this repository. IMAGE_FOLDER_ID and INITIAL_BACKUP_DONE are initialized. Setup rejects repeated execution. Authentication fails closed if ADMIN_PIN is absent.
+ADMIN_PIN must be set by the owner in Script Properties (no minimum length; empty passwords are rejected). Never put its value in this repository. IMAGE_FOLDER_ID and INITIAL_BACKUP_DONE are initialized. Setup rejects repeated execution. Authentication fails closed if ADMIN_PIN is absent.
 
 Customer URL is unchanged. backend-config.json points to the company deployment. Public catalog fetch and V13 T-bone option selection were verified in the browser. Administrator entry redirects to the company Apps Script login.
 
