@@ -129,7 +129,8 @@ function safeImage(url){return typeof url==='string'&&/^https:\/\/(?:drive\.goog
 window.lagMenuCallback=function(data){
  if(!data||!Array.isArray(data.menus))return;
  if(data.revision===centralRevision)return;
- for(const row of data.menus){
+ for(const sourceRow of data.menus){
+  const row={...sourceRow,name:sourceRow.plainName??sourceRow.name};
   if(!/^[a-zA-Z0-9_-]{1,100}$/.test(row.id))continue;
   let item=menus.find(m=>m.id===row.id)||menus.find(m=>!m.id.startsWith('menu-')&&m.name===row.name);if(item)item.id=row.id;
   if(!item){item={id:row.id,img:'tbone-real.svg',price:null};menus.push(item)}
@@ -138,7 +139,7 @@ window.lagMenuCallback=function(data){
   if(Number.isFinite(row.price)&&row.price>=0)item.price=row.price;
   item.spicy=Number(row.spicy)||0;item.active=row.active!==false;item.order=row.order;
   item.imageUrl=safeImage(row.imageUrl);
-  if(Array.isArray(row.options))item.options=row.options.map(g=>({name:g.name,min:g.min,max:g.max,count:g.max,allowDuplicate:g.allowDuplicate,items:(g.items||[]).map(o=>({name:o.name,price:o.extra||0,spicy:Number(o.spicy)||0,imageUrl:safeImage(o.imageUrl),img:'side-salad.svg'}))}));
+  if(Array.isArray(row.options))item.options=row.options.map(g=>({name:g.name,min:g.min,max:g.max,count:g.max,allowDuplicate:g.allowDuplicate,items:(g.items||[]).map(o=>({name:o.plainName??o.name,price:o.extra||0,spicy:Number(o.spicy)||0,imageUrl:safeImage(o.imageUrl),img:'side-salad.svg'}))}));
  }
  centralRevision=data.revision;menus.sort((a,b)=>(a.order??9999)-(b.order??9999));
  // Do not replace an in-progress selection; new opens use the latest catalog.
