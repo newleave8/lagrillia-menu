@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "generatedFrom": "menu-sheet-initial-seed",
+  "menus": [
+    {
+      "id": "tbone",
+      "name": "티본 스테이크 [850g]",
+      "price": 179000,
+      "category": "그릴",
+      "listDesc": "안심과 등심을 함께 즐기는 프리미엄 스테이크",
+      "caption": "페어링 사이드 택2"
+    },
+    {
+      "id": "season-pasta",
+      "name": "[시즌] 항정살&마리나라 오일 파스타",
+      "price": 23900,
+      "category": "시즌 메뉴"
+    },
+    {
+      "id": "season-risotto",
+      "name": "[시즌] 항정살 마스카포네 크림 리조또",
+      "price": 24900,
+      "category": "시즌 메뉴"
+    },
+    {
+      "id": "season-pizza",
+      "name": "[시즌] 펌킨 쉬림프 피자",
+      "price": 26900,
+      "category": "시즌 메뉴"
+    },
+    {
+      "id": "season-salad",
+      "name": "[시즌] 그릴 스테이크 웜 샐러드",
+      "price": 29900,
+      "category": "시즌 메뉴"
+    }
+  ]
+}
