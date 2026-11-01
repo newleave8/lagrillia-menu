@@ -35,6 +35,16 @@
 .tabs .active{border-bottom-color:var(--orange)}
 }
 @media(max-width:380px){.logo{font-size:22px}.tabs button{font-size:10px;letter-spacing:-.7px;padding:14px 0}}
+
+/* Mobile order history access: persistent and visible on narrow screens */
+@media(max-width:700px){
+ .top{display:flex;align-items:center;justify-content:space-between;gap:6px}
+ .top-right{display:flex!important;align-items:center!important;flex:0 0 auto;min-width:0}
+ .top .orderlink{display:inline-flex!important;align-items:center;justify-content:flex-end;gap:3px;color:#f76712!important;font-size:12px!important;font-weight:800;white-space:nowrap;padding:8px 0}
+ .logo{min-width:0;font-size:clamp(20px,6vw,25px);letter-spacing:-1.2px}
+ .foot{display:block!important;z-index:12}
+}
+@media(max-width:360px){.top .orderlink{font-size:11px!important}.logo{font-size:20px}}
 </style></head><body><div class="app"><header class="top"><div class="logo">LAGRILLIA</div><div class="top-right"><button class="orderlink" onclick="showCart()">🛒 주문내역 <span id="badge">0</span></button></div></header><nav class="tabs" id="tabs"></nav><main class="content" id="content"></main></div><button class="foot" onclick="showCart()">🛒 장바구니 <span id="floatingCount">0</span></button><div id="overlay" class="overlay"><div class="modal" id="modal"></div></div><div id="cartbox" class="cartbox"><div class="cartinner"><button class="close" onclick="hideCart()">×</button><h2>주문내역</h2><div class="notice">시제품: 실제 주문은 접수되지 않습니다. 메뉴와 가격은 원본 캡처에 보이는 일부만 검증되었습니다.</div><div id="cartrows"></div><h3 id="carttotal"></h3><button class="cta" onclick="alert('1차 시제품에서는 실제 주문 접수를 지원하지 않습니다.')">선주문 기능은 2차 개발 예정</button></div></div><script>
 const A='assets/';const cats=['그릴','프로모션','시즌 메뉴','해피아워','세트','파스타','라이스','피자','샐러드','사이드','디저트','음료','맥주','와인'];let cat='그릴',qty=1,current=null,selection={},cart=[];
 const sides=[{name:'매쉬드 포테이토',img:'stone.svg',price:0},{name:'프렌치 프라이즈',img:'stone.svg',price:0},{name:'가든 샐러드',img:'stone.svg',price:0}];
