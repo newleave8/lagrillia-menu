@@ -63,7 +63,7 @@ function saveAdmin(token,input){
  if(!Number.isFinite(Number(d.price))||Number(d.price)<0)throw Error('판매가 오류');
  const id=String(d.id||'MENU-'+Utilities.getUuid().slice(0,8));
  const url=input.photo?.data?saveImage_(input.photo):String(d.imageUrl||'');
- const gid=String(d.groupId||'');
+ const gid=String(d.groupId||(input.groups?.length?(input.groups[0].id||'GRP-'+Utilities.getUuid().slice(0,8)):''));
  upsert_(COL.menu,'메뉴ID',{'메뉴ID':id,'카테고리':d.category||'그릴','섹션':d.section||d.category||'그릴','메뉴명':d.name,'영문명':d.en||'','판매가(원)':Number(d.price),'배지':d.tag||'','간단설명':d.summary||'','상세설명':d.detail||'','이미지파일명':input.photo?.name||d.imageName||'','이미지URL':url,'이미지하단문구':d.caption||'','판매여부':'Y','노출순서':Number(d.order)||100,'옵션그룹ID':gid,'검증상태':'관리자 등록'},['메뉴ID','카테고리','섹션','메뉴명','영문명','판매가(원)','배지','간단설명','상세설명','이미지파일명','이미지URL','이미지하단문구','판매여부','노출순서','옵션그룹ID','검증상태']);
  // Option groups are upserted, never wholesale erased. Shared groups remain intact.
  (input.groups||[]).forEach((g,i)=>{
