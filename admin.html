@@ -9,14 +9,52 @@ function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':
 $('photo').addEventListener('change',ev=>{const f=ev.target.files?.[0];if(!f)return;if(f.size>3*1024*1024){alert('미리보기는 3MB 이하 사진만 지원합니다.');return}const reader=new FileReader;reader.onload=()=>{fileData=String(reader.result);showPhoto()};reader.readAsDataURL(f)});
 function showPhoto(){$('photoPreview').style.display=fileData?'block':'none';$('photoPreview').src=fileData}
 function clearForm(){selected='';for(const k of ['price','name','en','summary','detail','caption'])$(k).value='';$('cat').value='그릴';fileData='';groups=[];renderGroups();$('photo').value='';showPhoto();$('choose').value=''}
-function saveDraft(){if(!$('name').value.trim()){alert('메뉴명을 입력해 주세요.');return}const m={id:selected||'draft-'+Date.now(),image:fileData,groups:groups};for(const k of ['cat','price','name','en','summary','detail','caption','tag'])m[k]=$(k).value;const i=drafts.findIndex(x=>x.id===m.id);if(i>=0)drafts[i]=m;else drafts.push(m);try{localStorage.setItem(KEY,JSON.stringify(drafts));selected=m.id;refresh();$('choose').value=m.id;$('status').textContent='이 기기에 임시 저장되었습니다. 실제 웹앱에는 적용되지 않았습니다.'}catch(e){alert('기기 저장 공간 부족. 사진 크기를 줄여 주세요.')}}
+function saveDraft(){if(groups.some(g=>Number(g.min)>Number(g.max))){alert('옵션 최소 선택 수량은 최대 선택 수량보다 클 수 없습니다.');return}if(!$('name').value.trim()){alert('메뉴명을 입력해 주세요.');return}const m={id:selected||'draft-'+Date.now(),image:fileData,groups:groups};for(const k of ['cat','price','name','en','summary','detail','caption','tag'])m[k]=$(k).value;const i=drafts.findIndex(x=>x.id===m.id);if(i>=0)drafts[i]=m;else drafts.push(m);try{localStorage.setItem(KEY,JSON.stringify(drafts));selected=m.id;refresh();$('choose').value=m.id;$('status').textContent='이 기기에 임시 저장되었습니다. 실제 웹앱에는 적용되지 않았습니다.'}catch(e){alert('기기 저장 공간 부족. 사진 크기를 줄여 주세요.')}}
 
-function addGroup(){groups.push({title:'',min:1,max:1,items:[{name:'',extra:0}]});renderGroups()}
+
+function addGroup(){groups.push({title:'',min:1,max:1,items:[{name:'',extra:0,image:''}]});renderGroups()}
 function removeGroup(i){groups.splice(i,1);renderGroups()}
-function addOption(i){groups[i].items.push({name:'',extra:0});renderGroups()}
+function addOption(i){groups[i].items.push({name:'',extra:0,image:''});renderGroups()}
 function removeOption(i,j){groups[i].items.splice(j,1);renderGroups()}
-function setGroup(i,k,v){groups[i][k]=k==='min'||k==='max'?Math.max(0,Number(v)||0):v}
+function setGroup(i,k,v){groups[i][k]=(k==='min'||k==='max')?Math.max(0,Number(v)||0):v}
 function setOption(i,j,k,v){groups[i].items[j][k]=k==='extra'?Math.max(0,Number(v)||0):v}
-function renderGroups(){$('optionGroups').innerHTML=groups.map((g,i)=>'<div class="panel" style="background:#faf9f6;padding:12px"><label>그룹명 (예: 파스타 선택)</label><input value="'+escapeHtml(g.title)+'" oninput="setGroup('+i+',\'title\',this.value)"><div class="grid"><div><label>최소 선택</label><input type="number" min="0" value="'+g.min+'" oninput="setGroup('+i+',\'min\',this.value)"></div><div><label>최대 선택</label><input type="number" min="0" value="'+g.max+'" oninput="setGroup('+i+',\'max\',this.value)"></div></div><h3>선택 항목</h3>'+g.items.map((o,j)=>'<div class="grid" style="align-items:end;margin:8px 0"><div><label>항목명</label><input value="'+escapeHtml(o.name)+'" oninput="setOption('+i+','+j+',\'name\',this.value)"></div><div><label>추가금(원)</label><input type="number" min="0" value="'+o.extra+'" oninput="setOption('+i+','+j+',\'extra\',this.value)"></div><button class="alt" onclick="removeOption('+i+','+j+')">항목 삭제</button></div>').join('')+'<div class="actions"><button class="alt" onclick="addOption('+i+')">+ 항목 추가</button><button class="alt" onclick="removeGroup('+i+')">그룹 삭제</button></div></div>').join('')}
+async function uploadOptionPhoto(i,j,input){
+ const file=input.files?.[0];if(!file)return;
+ if(!['image/jpeg','image/png','image/webp'].includes(file.type)){alert('JPG, PNG 또는 WebP 사진을 선택해 주세요.');return}
+ if(file.size>2*1024*1024){alert('현재 임시 저장은 옵션 사진당 2MB 이하만 지원합니다.');return}
+ const reader=new FileReader();
+ reader.onload=()=>{if(!groups[i]||!groups[i].items[j])return;groups[i].items[j].image=String(reader.result);renderGroups();$('status').textContent='옵션 사진 미리보기가 적용됐습니다. 중앙 DB에는 저장되지 않았습니다.'};
+ reader.readAsDataURL(file)
+}
+function renderGroups(){
+ const area=$('optionGroups');area.replaceChildren();
+ groups.forEach((g,i)=>{
+  const panel=document.createElement('div');panel.className='panel';panel.style.cssText='background:#faf9f6;padding:12px';
+  const groupTitle=document.createElement('label');groupTitle.textContent='그룹명 (예: 파스타 선택)';panel.append(groupTitle);
+  const title=document.createElement('input');title.value=g.title||'';title.oninput=e=>setGroup(i,'title',e.target.value);panel.append(title);
+  const rule=document.createElement('div');rule.className='grid';
+  for(const [field,label] of [['min','최소 선택'],['max','최대 선택']]){
+    const wrap=document.createElement('div');const lab=document.createElement('label');lab.textContent=label;
+    const inp=document.createElement('input');inp.type='number';inp.min='0';inp.value=g[field]??1;inp.oninput=e=>setGroup(i,field,e.target.value);wrap.append(lab,inp);rule.append(wrap);
+  }panel.append(rule);
+  const title2=document.createElement('h3');title2.textContent='선택 항목 및 이미지';panel.append(title2);
+  g.items.forEach((o,j)=>{
+    const card=document.createElement('div');card.style.cssText='background:#fff;border:1px solid #ddd;border-radius:9px;padding:12px;margin:10px 0';
+    const grid=document.createElement('div');grid.className='grid';
+    for(const [key,label,type] of [['name','옵션명','text'],['extra','추가금액(원)','number']]){
+      const wrap=document.createElement('div');const lab=document.createElement('label');lab.textContent=label;const inp=document.createElement('input');
+      inp.type=type;if(type==='number')inp.min='0';inp.value=o[key]??'';inp.oninput=e=>setOption(i,j,key,e.target.value);wrap.append(lab,inp);grid.append(wrap);
+    }card.append(grid);
+    const picLabel=document.createElement('label');picLabel.textContent='옵션 사진 업로드';card.append(picLabel);
+    const file=document.createElement('input');file.type='file';file.accept='image/png,image/jpeg,image/webp';file.onchange=e=>uploadOptionPhoto(i,j,e.target);card.append(file);
+    if(o.image){const img=document.createElement('img');img.className='preview';img.src=o.image;img.alt=o.name||'옵션 미리보기';card.append(img)}
+    const remove=document.createElement('button');remove.className='alt';remove.type='button';remove.textContent='옵션 삭제';remove.onclick=()=>removeOption(i,j);card.append(remove);panel.append(card);
+  });
+  const action=document.createElement('div');action.className='actions';
+  const plus=document.createElement('button');plus.type='button';plus.className='alt';plus.textContent='+ 옵션 항목';plus.onclick=()=>addOption(i);
+  const minus=document.createElement('button');minus.type='button';minus.className='alt';minus.textContent='그룹 삭제';minus.onclick=()=>removeGroup(i);
+  action.append(plus,minus);panel.append(action);area.append(panel);
+ })
+}
 function exportDrafts(){const content=JSON.stringify(drafts.map(({image,...m})=>({...m,imageOmitted:!!image})),null,2);const url=URL.createObjectURL(new Blob([content],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='lag-menu-drafts.json';a.click();URL.revokeObjectURL(url)}
 </script></body></html>
