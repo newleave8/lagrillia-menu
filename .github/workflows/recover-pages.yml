@@ -1,0 +1,16 @@
+name: Recover stuck Pages deployment
+on:
+  push:
+    paths:
+      - '.github/workflows/recover-pages.yml'
+  workflow_dispatch:
+permissions:
+  pages: write
+jobs:
+  cancel-stuck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel the known stuck Pages deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST repos/newleave8/lagrillia-menu/pages/deployments/711fbf262d6f45fe0d03b7a34feea95eddba9b51/cancel
