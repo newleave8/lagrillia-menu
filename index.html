@@ -146,7 +146,11 @@ window.lagMenuCallback=function(data){
  for(const sourceRow of data.menus){
   const row={...sourceRow,name:sourceRow.plainName??sourceRow.name};
   if(!/^[a-zA-Z0-9_-]{1,100}$/.test(row.id))continue;
-  let item=menus.find(m=>m.id===row.id)||menus.find(m=>!m.id.startsWith('menu-')&&m.name===row.name);if(item){hiddenStarterIds.delete(item.id);item.id=row.id;}
+  let item=menus.find(m=>m.id===row.id)||menus.find(m=>!m.id.startsWith('menu-')&&m.name===row.name);if(item){
+   const starter=hiddenStarterIds.delete(item.id);
+   if(starter&&!(Number.isFinite(row.price)&&row.price>0&&safeImage(row.imageUrl)))hiddenStarterIds.add(row.id);
+   item.id=row.id;
+  }
   if(!item){item={id:row.id,img:'tbone-real.svg',price:null};menus.push(item)}
   for(const k of ['name','en','section','tag','listDesc','caption','detail','origin','allergens'])if(typeof row[k]==='string')item[k]=row[k];
   if(typeof row.category==='string'&&cats.includes(row.category))item.cat=row.category;
