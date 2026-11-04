@@ -15,12 +15,12 @@ function appendPrepared_(table,objects,writes){if(!objects.length)return;const h
 function asset_(url,name){return url|| (name?'https://newleave8.github.io/lagrillia-menu/assets/'+encodeURIComponent(name):'')}
 function detailFields_(m){const raw=String(m['상세설명']||'');const match=raw.match(/\[\s*알레르기\s*정보\s*(?::\s*([^\]]*))?\]\s*([\s\S]*)$/);return {detail:match?raw.slice(0,match.index).trimEnd():raw,allergens:String(m['알레르기정보']||(match?(match[1]||match[2]||'').trim():'')),origin:String(m['원산지']||'')}}
 function spicyName_(name,level){const n=Number(level);return String(name||'')+(Number.isInteger(n)&&n>0&&n<=3?' '+'🔥'.repeat(n):'')}
-function publicCatalog_(){const db=readDb_(),groups=db.groups,items=db.items;return {schemaVersion:3,revision:db.revision+'-display-v1',menus:db.menus.filter(m=>m['메뉴ID']).map(m=>({id:String(m['메뉴ID']),category:m['카테고리'],section:m['섹션'],name:spicyName_(m['메뉴명'],m['매운맛']),plainName:m['메뉴명'],en:m['영문명'],price:m['판매가(원)']===''?null:Number(m['판매가(원)']),tag:m['배지'],discounted:m['할인제품']==='Y',originalPrice:m['할인제품']==='Y'?Number(m['정상가(원)'])||null:null,spicy:Number(m['매운맛'])||0,listDesc:m['간단설명'],detail:detailFields_(m).detail,origin:detailFields_(m).origin,allergens:detailFields_(m).allergens,imageUrl:asset_(m['이미지URL'],m['이미지파일명']),caption:m['이미지하단문구'],active:String(m['판매여부']).toUpperCase()==='Y',order:Number(m['노출순서'])||9999,options:ids_(m['옵션그룹ID']).flatMap(id=>groups.filter(g=>g['옵션그룹ID']===id&&g['사용여부']!=='N').map(g=>({id,name:g['그룹명'],min:Number(g['최소선택'])||0,max:Number(g['최대선택'])||0,allowDuplicate:g['중복선택허용']==='Y',items:items.filter(o=>o['옵션그룹ID']===id&&o['사용여부']!=='N').sort((a,b)=>Number(a['노출순서'])-Number(b['노출순서'])).map(o=>({id:o['옵션ID'],name:spicyName_(o['옵션명'],o['매운맛']),plainName:o['옵션명'],extra:Number(o['추가금액(원)'])||0,spicy:Number(o['매운맛'])||0,imageUrl:asset_(o['이미지URL'],o['이미지파일명'])}))})))})).sort((a,b)=>a.order-b.order)}}
-function doGet(e){if(e?.parameter?.page==='checkout')return checkoutPage_(e.parameter.channel);if(e?.parameter?.page==='admin')return HtmlService.createHtmlOutputFromFile('Admin').setTitle('라그릴리아 관리자').addMetaTag('viewport','width=device-width,initial-scale=1');const cb=String(e?.parameter?.callback||'');if(cb&&cb!=='lagMenuCallback')throw Error('잘못된 callback');const payload=publicCatalog_();const json=JSON.stringify(payload).replace(/</g,'\\u003c').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029');return ContentService.createTextOutput(cb?cb+'('+json+');':json).setMimeType(cb?ContentService.MimeType.JAVASCRIPT:ContentService.MimeType.JSON)}
+function publicCatalog_(){const db=readDb_(),groups=db.groups,items=db.items;const categories=categorySettings_(),preorderOpen=preorderOpen_();return {schemaVersion:3,categories,preorderOpen,revision:String(preorderOpen)+'-'+db.revision+'-display-v1-'+hashRecords_(categories),menus:db.menus.filter(m=>m['메뉴ID']).map(m=>({id:String(m['메뉴ID']),category:m['카테고리'],section:m['섹션'],name:spicyName_(m['메뉴명'],m['매운맛']),plainName:m['메뉴명'],en:m['영문명'],price:m['판매가(원)']===''?null:Number(m['판매가(원)']),tag:m['배지'],discounted:m['할인제품']==='Y',originalPrice:m['할인제품']==='Y'?Number(m['정상가(원)'])||null:null,spicy:Number(m['매운맛'])||0,listDesc:m['간단설명'],detail:detailFields_(m).detail,origin:detailFields_(m).origin,allergens:detailFields_(m).allergens,imageUrl:asset_(m['이미지URL'],m['이미지파일명']),caption:m['이미지하단문구'],active:String(m['판매여부']).toUpperCase()==='Y',order:Number(m['노출순서'])||9999,options:ids_(m['옵션그룹ID']).flatMap(id=>groups.filter(g=>g['옵션그룹ID']===id&&g['사용여부']!=='N').map(g=>({id,name:g['그룹명'],min:Number(g['최소선택'])||0,max:Number(g['최대선택'])||0,allowDuplicate:g['중복선택허용']==='Y',items:items.filter(o=>o['옵션그룹ID']===id&&o['사용여부']!=='N').sort((a,b)=>Number(a['노출순서'])-Number(b['노출순서'])).map(o=>({id:o['옵션ID'],name:spicyName_(o['옵션명'],o['매운맛']),plainName:o['옵션명'],extra:Number(o['추가금액(원)'])||0,spicy:Number(o['매운맛'])||0,imageUrl:asset_(o['이미지URL'],o['이미지파일명'])}))})))})).sort((a,b)=>a.order-b.order)}}
+function doGet(e){if(e?.parameter?.page==='preorder-switch')return preorderSwitchPage_();if(e?.parameter?.page==='checkout')return checkoutPage_(e.parameter.channel);if(e?.parameter?.page==='admin')return HtmlService.createHtmlOutputFromFile('Admin').setTitle('라그릴리아 관리자').addMetaTag('viewport','width=device-width,initial-scale=1');const cb=String(e?.parameter?.callback||'');if(cb&&cb!=='lagMenuCallback')throw Error('잘못된 callback');const payload=publicCatalog_();const json=JSON.stringify(payload).replace(/</g,'\\u003c').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029');return ContentService.createTextOutput(cb?cb+'('+json+');':json).setMimeType(cb?ContentService.MimeType.JAVASCRIPT:ContentService.MimeType.JSON)}
 function signin(pin){const lock=LockService.getUserLock();if(!lock.tryLock(5000))throw Error('로그인 처리 중입니다. 잠시 후 다시 시도하세요.');try{const c=CacheService.getScriptCache(),key='signin-attempts',n=Number(c.get(key)||0);if(n>=10)throw Error('로그인 시도 제한. 5분 후 다시 시도하세요');const correct=PropertiesService.getScriptProperties().getProperty('ADMIN_PIN');if(!correct)throw Error('관리자 비밀번호를 서버 속성에 설정하세요');if(String(pin)!==correct){c.put(key,String(n+1),300);throw Error('관리자 인증 실패')}c.remove(key);const token=Utilities.getUuid()+Utilities.getUuid();c.put('auth:'+token,'1',3600);return token}finally{lock.releaseLock()}}
 function requireAuth_(t){if(typeof t!=='string'||CacheService.getScriptCache().get('auth:'+t)!=='1')throw Error('인증이 만료됐습니다. 다시 로그인하세요')}
 function signout(token){requireAuth_(token);CacheService.getScriptCache().remove('auth:'+token);return true}
-function loadAdmin(token){requireAuth_(token);const lock=writeLock_();try{const db=readDb_();return {menus:db.menus,groups:db.groups,items:db.items,revision:db.revision}}finally{lock.releaseLock()}}
+function loadAdmin(token){requireAuth_(token);const lock=writeLock_();try{const db=readDb_();return {menus:db.menus,groups:db.groups,items:db.items,categories:categorySettings_(),revision:db.revision}}finally{lock.releaseLock()}}
 function text_(v,max){const s=String(v??'');if(s.length>(max||5000))throw Error('입력 길이 초과');return s}
 function number_(v,label,max){if(v===''||v===null||v===undefined||!Number.isSafeInteger(Number(v))||Number(v)<0||Number(v)>(max||10000000))throw Error(label+' 입력 오류');return Number(v)}
 function url_(v){v=text_(v,2000);if(v&&!/^https:\/\/(?:drive\.google\.com|lh3\.googleusercontent\.com|newleave8\.github\.io)\//.test(v))throw Error('허용되지 않은 사진 주소');return v}
@@ -56,3 +56,53 @@ function saveAdmin(token,input){requireAuth_(token);if(!input?.menu)throw Error(
 function setupBackend(){const p=PropertiesService.getScriptProperties();if(p.getProperty('INITIAL_BACKUP_DONE'))throw Error('이미 초기화된 프로젝트입니다');if(!p.getProperty('IMAGE_FOLDER_ID')){const f=DriveApp.createFolder('라그릴리아 메뉴북 사진');p.setProperty('IMAGE_FOLDER_ID',f.getId())}if(!p.getProperty('INITIAL_BACKUP_DONE')){const b=book_();Object.values(COL).forEach(n=>sheet_(n).copyTo(b).setName('원본백업_'+n));p.setProperty('INITIAL_BACKUP_DONE','1')}const sh=sheet_(COL.menu),data=sh.getDataRange().getValues(),h=data[0];data.forEach((r,i)=>{if(i&& !r[h.indexOf('메뉴ID')]&&String(r[h.indexOf('메뉴명')]).includes('본인립아이'))sh.getRange(i+1,h.indexOf('메뉴ID')+1).setValue('ribeye')});const opts=records_(COL.item);if(!opts.some(o=>o['옵션그룹ID']==='rib-sides'))opts.filter(o=>o['옵션그룹ID']==='tbone-sides').forEach(o=>upsert_(COL.item,'옵션ID',{...o,'옵션ID':'rib-'+o['옵션ID'],'옵션그룹ID':'rib-sides'}));console.log('초기화 완료. ADMIN_PIN을 프로젝트 설정의 스크립트 속성에 설정하세요.')}
 
 
+
+function categorySettings_(){
+ const saved=PropertiesService.getScriptProperties().getProperty('MENU_CATEGORIES');
+ return saved?JSON.parse(saved):['그릴','프로모션','시즌 메뉴','세트','파스타','라이스','피자','샐러드','사이드','디저트','음료','맥주','와인'].map(id=>({id,name:id,banner:''}));
+}
+function saveCategory(token,input){
+ requireAuth_(token);
+ const name=String(input.name||'').trim();
+ if(!input.remove&&(!name||name.length>40))throw Error('카테고리 이름을 1~40자로 입력하세요.');
+ const photo=photo_(input.photo);
+ const lock=writeLock_(),created=[];
+ try{
+  const rows=categorySettings_(),row=rows.find(c=>c.id===input.id&&!c.deleted);
+  if((input.id||input.remove)&&!row)throw Error('카테고리가 변경되었습니다. 다시 불러오세요.');
+  if(input.remove){row.deleted=true;row.banner=''}
+  else{
+   if(rows.some(c=>!c.deleted&&c!==row&&c.name===name))throw Error('이미 사용 중인 카테고리 이름입니다.');
+   const category=row||{id:'cat-'+Utilities.getUuid(),banner:''};
+   category.name=name;
+   if(photo)category.banner=upload_(photo,created);
+   else if(input.clearBanner)category.banner='';
+   if(!row)rows.push(category);
+  }
+  PropertiesService.getScriptProperties().setProperty('MENU_CATEGORIES',JSON.stringify(rows));
+  return rows;
+ }catch(error){
+  created.forEach(file=>{try{file.setTrashed(true)}catch(_){}});
+  throw error;
+ }finally{lock.releaseLock()}
+}
+
+function preorderOpen_(){
+ return PropertiesService.getScriptProperties().getProperty('PREORDER_OPEN')!=='OFF';
+}
+function setPreorderOpen(pin,open){
+ if(typeof open!=='boolean')throw Error('접수 상태가 올바르지 않습니다.');
+ const token=signin(pin);
+ try{
+  const lock=writeLock_();
+  try{
+   PropertiesService.getScriptProperties().setProperty('PREORDER_OPEN',open?'ON':'OFF');
+   return open;
+  }finally{lock.releaseLock()}
+ }finally{signout(token)}
+}
+function preorderSwitchPage_(){
+ return HtmlService.createHtmlOutputFromFile('PreorderSwitch').setTitle('선주문 접수 설정')
+  .addMetaTag('viewport','width=device-width,initial-scale=1')
+  .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
