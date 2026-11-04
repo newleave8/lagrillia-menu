@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<style>
+body{font:15px system-ui;color:#20271e;margin:8px}label,input{display:block}input{box-sizing:border-box;width:100%;padding:10px;margin:8px 0}button{padding:8px 16px}#status{color:#a22}
+</style>
+<form id="settings">
+ <h2 id="heading"></h2>
+ <label for="pin">관리자 비밀번호</label>
+ <input id="pin" type="password" autocomplete="current-password" required>
+ <button id="save">확인</button>
+ <p id="status" role="status"></p>
+</form>
+<script>
+const open = <?!= openJson ?>;
+const channel = <?!= channelJson ?>;
+const form = document.getElementById('settings');
+const pin = document.getElementById('pin');
+const save = document.getElementById('save');
+const status = document.getElementById('status');
+document.getElementById('heading').textContent = open ? '선주문 접수 켜기' : '선주문 접수 끄기';
+form.addEventListener('submit', event => {
+ event.preventDefault();
+ save.disabled = true;
+ status.textContent = '';
+ google.script.run.withSuccessHandler(value => {
+  window.top.postMessage({type:'lag-preorder-switch-saved',channel,open:value}, 'https://newleave8.github.io');
+ }).withFailureHandler(error => {
+  status.textContent = error.message;
+  save.disabled = false;
+ }).setPreorderOpen(pin.value, open);
+ pin.value = '';
+});
+</script>
+</html>
