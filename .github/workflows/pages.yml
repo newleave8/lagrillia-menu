@@ -21,7 +21,7 @@ jobs:
       - name: Prepare public files only
         run: |
           mkdir _site
-          cp index.html admin.html backend-config.json menu-data.json _site/
+          cp index.html admin.html backend-config.json menu-data.json tablet-alerts.html preorder-push-worker.js _site/
           cp -R assets _site/assets
       - uses: actions/upload-pages-artifact@v3
         with:
