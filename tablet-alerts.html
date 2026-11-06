@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>라그릴리아 판교점 · 태블릿 알림 등록</title>
+<style>body{font:16px system-ui;max-width:440px;margin:32px auto;padding:0 16px;color:#20271e}label,input,button{display:block}input,button{font:inherit;padding:10px;margin:8px 0}iframe{display:none}</style>
+<h1>점포 태블릿 알림 등록</h1>
+<p>이 태블릿을 새로 등록하면 이전에 등록한 태블릿의 수신 설정을 교체합니다.</p>
+<form id="register" method="post" target="response">
+  <label for="pin">관리자 비밀번호</label>
+  <input id="pin" name="pin" type="password" autocomplete="current-password" required>
+  <input type="hidden" name="action" value="register-preorder-tablet">
+  <input type="hidden" name="channel">
+  <input type="hidden" name="device">
+  <button id="save" disabled>이 태블릿 등록</button>
+</form>
+<p id="result" role="status">알림 등록 화면을 준비하고 있습니다.</p>
+<iframe name="response" title="태블릿 등록 응답"></iframe>
+<script type="module">
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
+import {getMessaging,getToken,onMessage,isSupported} from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging.js';
+
+const form=document.querySelector('#register');
+const button=document.querySelector('#save');
+const result=document.querySelector('#result');
+let channel='',timer;
+
+try {
+  if (!(await isSupported())) throw Error('갤럭시 Chrome 일반 탭에서 열어 주세요.');
+  const response=await fetch('./backend-config.json',{cache:'no-store'});
+  const config=await response.json();
+  if (!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(config.url)) throw Error('서버 주소를 확인해 주세요.');
+  form.action=config.url;
+  const worker=await navigator.serviceWorker.register('./preorder-push-worker.js');
+  const registration=await navigator.serviceWorker.ready;
+  if (registration.scope!==worker.scope) throw Error('알림 서비스 워커를 확인해 주세요.');
+  const messaging=getMessaging(initializeApp({"apiKey":"AIzaSyB0qajyHbXezJbhUPhnaaVmHeMy70JNy2E","projectId":"lag-push","messagingSenderId":"211486586221","appId":"1:211486586221:web:e0df90dfe20caddae61664"}));
+  onMessage(messaging,payload=>{
+    const notification=payload.notification;
+    if (notification) registration.showNotification(notification.title,{body:notification.body,tag:'lag-preorders',renotify:true,data:{link:new URL('admin.html',location.href).href}});
+  });
+  button.disabled=false;
+  result.textContent='관리자 비밀번호를 입력하고 알림을 허용해 주세요.';
+  form.addEventListener('submit',async event=>{
+    event.preventDefault();
+    button.disabled=true;
+    try {
+      if (await Notification.requestPermission()!=='granted') throw Error('Chrome에서 이 사이트의 알림을 허용해 주세요.');
+      form.elements.device.value=await getToken(messaging,{
+        vapidKey:'BEysYrIB7aafNjhK5m4MSOAOl1O18PA_jYk4srUyymzd8if4NWt1fWYquznjp83Rlj5EbdGbax_7Kyirh0dS9Eo',
+        serviceWorkerRegistration:registration
+      });
+      if (!form.elements.device.value) throw Error('태블릿 등록 정보를 받지 못했습니다.');
+      channel=Array.from(crypto.getRandomValues(new Uint8Array(16)),byte=>byte.toString(16).padStart(2,'0')).join('');
+      form.elements.channel.value=channel;
+      form.submit();
+      form.elements.pin.value='';
+      result.textContent='등록 요청 중입니다.';
+      timer=setTimeout(()=>{
+        channel='';
+        button.disabled=false;
+        result.textContent='등록 결과를 받지 못했습니다. 서버 배포 상태를 확인해 주세요.';
+      },20000);
+    } catch (error) {
+      button.disabled=false;
+      result.textContent=error.message;
+    }
+  });
+  window.addEventListener('message',event=>{
+    if (!channel || !/^https:\/\/[a-z0-9-]+-script\.googleusercontent\.com$/.test(event.origin) ||
+        event.data?.type!=='lag-tablet-registration' || event.data.channel!==channel) return;
+    channel='';
+    clearTimeout(timer);
+    button.disabled=false;
+    result.textContent=event.data.message;
+  });
+} catch (error) {
+  result.textContent=error.message;
+}
+</script>
