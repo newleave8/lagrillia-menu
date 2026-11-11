@@ -285,7 +285,7 @@ function selectRecommendedSet(index){
  if(!quote||preorderOpen!==true)return;
  openMenu(quote.menu.id);qty=quote.quantity;renderModal();
 }
-</script><dialog id="preorderNoticeDialog" aria-labelledby="preorderNoticeTitle"><h2 id="preorderNoticeTitle">선주문 접수 안내</h2><p>주문 메뉴 변경이 필요한 경우 매장으로 연락 부탁드립니다.</p><form method="dialog" class="preorder-notice-actions"><button value="cancel">취소</button><button value="confirm" class="notice-confirm" autofocus>확인</button></form></dialog><script>
+</script><dialog id="preorderNoticeDialog" aria-labelledby="preorderNoticeTitle"><h2 id="preorderNoticeTitle">선주문 접수 안내</h2><p>주문한 메뉴의 변경이 필요한 경우 매장으로 연락 부탁드립니다.</p><form method="dialog" class="preorder-notice-actions"><button value="cancel">취소</button><button value="confirm" class="notice-confirm" autofocus>확인</button></form></dialog><script>
 function showPreorderNotice(){
  if(preorderOpen!==true||!cart.length||cart.some(item=>item.demo||!item.menuId)||!window.menuBackend||!centralRevision){beginPreorder();return}
  document.getElementById('preorderNoticeDialog').showModal();
