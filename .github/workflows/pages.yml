@@ -23,6 +23,8 @@ jobs:
           mkdir _site
           cp index.html admin.html backend-config.json menu-data.json tablet-alerts.html preorder-push-worker.js _site/
           cp -R assets _site/assets
+          mkdir -p _site/spc-square
+          cp spc-square/index.html spc-square/admin.html spc-square/backend-config.json spc-square/tablet-alerts.html spc-square/preorder-push-worker.js _site/spc-square/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
