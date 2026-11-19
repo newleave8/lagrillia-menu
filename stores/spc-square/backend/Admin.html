@@ -1,0 +1,459 @@
+<!doctype html><html lang="ko"><head><base target="_top"><meta name="viewport" content="width=device-width,initial-scale=1"><title>라그릴리아 메뉴 관리</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f4f1;font:15px/1.55 Arial,'Malgun Gothic',sans-serif;color:#222}header{background:#20271e;color:white;padding:18px 20px;font:700 25px Georgia}main{max-width:800px;margin:20px auto;padding:0 14px}section{background:#fff;border:1px solid #ddd;border-radius:12px;padding:18px;margin-bottom:15px}label{display:block;font-weight:bold;margin:13px 0 5px}input,select,textarea{width:100%;padding:10px;border:1px solid #bcbcb8;border-radius:6px;font:inherit}input[type=checkbox]{width:auto}textarea{min-height:90px}button{padding:12px 16px;border:0;border-radius:7px;background:#29352a;color:#fff;font-weight:bold;cursor:pointer;margin:5px}button:disabled{opacity:.5}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.opt{border:1px solid #ddd;padding:12px;margin:12px 0;border-radius:8px}.small{font-size:12px;color:#666}.status{background:#eef5ee;padding:12px;border-radius:8px;white-space:pre-wrap;margin:12px 0}.hide{display:none}.preview{max-width:170px;max-height:120px;display:block;margin:8px 0}@media(max-width:600px){.grid{grid-template-columns:1fr}}.section-preview{display:flex;align-items:center;gap:12px;margin:16px 0;font-weight:700;text-align:center;word-break:keep-all}.section-preview[hidden]{display:none}.section-preview:before,.section-preview:after{content:"";flex:1;min-width:20px;height:1px;background:#292820}
+.pre-layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:16px}.pre-row{display:block;width:100%;text-align:left;margin:0 0 8px;background:#f6f5ef;color:#222;border:1px solid #ddd;line-height:1.7}.pre-state{color:#bd4f08;font-size:12px}.pre-detail{min-width:0;background:#fafaf7;border:1px solid #ddd;padding:14px;border-radius:8px}.pre-detail h3{margin-top:0}.pre-table{border-collapse:collapse;width:100%;font-size:14px}.pre-table th,.pre-table td{border-bottom:1px solid #ddd;text-align:left;padding:12px 5px;vertical-align:top}.pre-table td:last-child{white-space:nowrap}.pre-total{text-align:right;font-size:20px;font-weight:bold}.pre-note{background:#eef1e9;padding:12px;white-space:pre-wrap}.pre-delete{background:#9b4034}.print-bill{display:none}#preorderPanel{max-width:1000px;margin-left:auto;margin-right:auto}main:has(#preorderPanel:not(.hide)){max-width:1100px}@media(max-width:700px){.pre-layout{display:block}.pre-list{max-height:230px;overflow:auto;margin-bottom:15px}.pre-table{font-size:12px}}
+#orderBillDialog{box-sizing:border-box;width:min(380px,calc(100% - 24px));max-height:calc(100% - 24px);margin:auto;border:0;border-radius:10px;padding:0;background:#fff;color:#000}
+#orderBillDialog::backdrop{background:#0009}
+.bill-toolbar{position:sticky;top:0;display:flex;justify-content:flex-end;padding:8px 12px;background:#fff;border-bottom:1px solid #eee}
+#orderBillDialog #printBill{display:block;margin:0 auto;padding:12px 20px 24px;font:15px/1.5 'Malgun Gothic','Apple SD Gothic Neo',sans-serif;overflow-wrap:anywhere}
+#printBill h1{text-align:center;font-size:25px;letter-spacing:2px;margin:10px 0 20px}.bill-table{text-align:center;border-top:1px dashed #000;border-bottom:3px double #000;padding:10px 0;margin:10px 0}.bill-table strong{display:block;font-size:30px}.bill-item{border-bottom:1px dashed #000;padding:12px 0;break-inside:avoid}.bill-line{display:grid;grid-template-columns:minmax(0,1fr) 30px;gap:8px;align-items:start;word-break:keep-all}.bill-line>:last-child{text-align:right;white-space:nowrap}.bill-menu{font-size:20px;font-weight:bold}.bill-option{font-size:16px;padding-top:5px;padding-left:8px}.bill-note{border-top:3px double #000;margin-top:12px;padding-top:12px;white-space:pre-wrap;font-size:19px;overflow-wrap:anywhere}.bill-note>b{display:block;margin-bottom:8px}
+#orderAlertBanner{position:sticky;top:0;z-index:10;background:#fff2e7;border-bottom:2px solid #bc4d00;padding:8px 16px;color:#752d00}#orderAlertBanner button{margin-left:10px}@media print{#orderAlertBanner{display:none!important}}
+#adminNav:not(.hide){display:flex;align-items:center;flex-wrap:wrap;gap:8px}.management-nav{position:relative;margin:0}.management-nav summary{display:flex;align-items:center;gap:12px;cursor:pointer;list-style:none;background:#263429;color:white;border-radius:6px;padding:12px 16px;font-size:14px;font-weight:700;min-height:44px}.management-nav summary::-webkit-details-marker{display:none}.management-nav summary:focus-visible{outline:2px solid #f76712;outline-offset:3px}.management-options{position:absolute;top:calc(100% + 6px);left:0;z-index:20;min-width:160px;background:white;border:1px solid #ddd;border-radius:8px;padding:6px;box-shadow:0 5px 16px #0002;display:grid;gap:4px}.management-options button{width:100%;margin:0;text-align:left;min-height:44px}#orderAlertStatus{flex-basis:100%;margin:0 0 4px}
+.sort-section{background:#eeede7;padding:10px 12px;border-radius:6px;font-weight:700;margin:18px 0 6px}.sort-row{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #ddd;background:#fff;border-radius:7px;margin:6px 0}.sort-row img{width:64px;height:52px;object-fit:contain}.sort-row-name{flex:1;min-width:0;overflow-wrap:anywhere}.sort-hidden{display:inline-block;color:#777;font-size:12px;margin-left:6px}.sort-row button{margin:0;min-width:44px;min-height:44px;padding:8px}.sort-handle{touch-action:none;cursor:grab;user-select:none}.sort-row.drop-before{border-top:3px solid #f76712}.sort-row.drop-after{border-bottom:3px solid #f76712}.sort-row.drag-source{opacity:.6}.sort-arrows{display:flex;gap:4px}@media(max-width:500px){.sort-row{gap:6px;padding:7px}.sort-row img{width:44px;height:44px}.sort-arrows{flex-direction:column}.sort-row-name{font-size:14px}}
+
+main:has(#manualPanel:not(.hide)){max-width:1120px}#manualPanel h2{margin:0;font-size:25px}#manualPanel .manual-lead{color:#666;margin:6px 0 20px}.manual-layout{display:grid;grid-template-columns:210px minmax(0,1fr);gap:24px}.manual-menu{display:flex;flex-direction:column;gap:5px;align-self:start}.manual-menu button{background:#f5f4f1;color:#333;text-align:left;margin:0;border:1px solid transparent;font-size:14px;min-height:44px}.manual-menu button[aria-pressed=true]{background:#fff1e8;border-color:#fa6a12;color:#aa4100}.manual-article{min-width:0}.manual-article h3{font-size:23px;margin:0 0 4px}.manual-path{color:#73695e;font-size:14px;margin:0 0 16px}.manual-example{display:block;width:100%;border:1px solid #e2ded5;border-radius:10px;background:#faf9f6}.manual-steps{padding-left:25px;margin:20px 0}.manual-steps li{margin:0 0 13px;padding-left:5px;line-height:1.8;word-break:keep-all}.manual-note{background:#f5f4ed;border-left:3px solid #e17b36;padding:14px 16px;border-radius:4px;font-size:14px;line-height:1.8}.manual-example-label{font-size:12px;color:#777;margin:6px 0}.manual-menu button:focus-visible{outline:2px solid #ed6918;outline-offset:2px}@media(max-width:700px){.manual-layout{grid-template-columns:1fr;gap:18px}.manual-menu{display:grid;grid-template-columns:1fr 1fr}.manual-menu button{padding:10px;font-size:13px}.manual-article h3{font-size:21px}#manualPanel{padding:14px}.manual-steps{padding-left:22px}.manual-steps li{font-size:15px}}
+</style></head><body><header>LAGRILLIA · SPC스퀘어점 관리자</header><div id="orderAlertBanner" class="hide"><strong id="orderAlertMessage" role="status"></strong><button type="button" onclick="switchAdminView('orders')">선주문 내역 보기</button></div><main><section id="login"><h2>관리자 로그인</h2><label for="pin">관리자 비밀번호</label><input type="password" id="pin" autocomplete="current-password"><button type="button" id="loginButton">로그인</button><p id="loginStatus" role="status" aria-live="polite"></p><p class="small">접속 세션은 로그인 16시간 후 만료됩니다. 비밀번호는 서버 속성에만 보관합니다.</p></section><div id="adminNav" class="hide"><button type="button" id="orderAlertToggle" onclick="toggleOrderAlerts()">화면 알림 켜기</button><details id="managementNav" class="management-nav"><summary>관리 <span aria-hidden="true">▾</span></summary><div class="management-options"><button type="button" onclick="switchAdminView('menus');document.getElementById('managementNav').open=false">메뉴 관리</button><button type="button" onclick="switchAdminView('wine');document.getElementById('managementNav').open=false">와인 관리</button><button type="button" onclick="switchAdminView('categories');document.getElementById('managementNav').open=false">카테고리 관리</button><button type="button" onclick="switchAdminView('sorting');document.getElementById('managementNav').open=false">메뉴 순서 편집</button></div></details><button onclick="switchAdminView('orders')">선주문 내역</button><button type="button" onclick="switchAdminView('manual')">사용 매뉴얼</button><button onclick="logout()">로그아웃</button><span id="orderAlertStatus" class="small" role="status"></span></div><section id="manualPanel" class="hide"><h2>관리자 사용 매뉴얼</h2><p class="manual-lead">처음 사용하는 점포도 기능별 화면 예시를 따라 차근차근 운영할 수 있습니다.</p><div class="manual-layout"><nav id="manualMenu" class="manual-menu" aria-label="매뉴얼 목차"></nav><article id="manualArticle" class="manual-article" aria-live="polite"></article></div></section><section id="sortPanel" class="hide"><h2>메뉴 순서 편집</h2><label for="sortCategory">카테고리</label><select id="sortCategory" onchange="changeSortCategory()"></select><p class="small">≡ 손잡이를 잡고 위아래로 이동하거나 ↑↓ 버튼을 사용하세요. 같은 구분 안에서 이동합니다.</p><div id="sortRows"></div><button id="sortSave" type="button" onclick="saveSortOrder()" disabled>순서 저장</button><button id="sortReload" type="button" onclick="reloadSortOrder()">최신 목록 불러오기</button><p id="sortStatus" role="status" aria-live="polite"></p></section><section id="categoryPanel" class="hide"><h2>카테고리 관리</h2><label for="categoryEdit">편집할 카테고리</label><select id="categoryEdit" onchange="showCategorySettings()"></select><label for="categoryName">카테고리 이름</label><input id="categoryName" maxlength="40"><label for="categoryBanner">상단 가로형 배너 (JPG/PNG/WebP, 최대 3MB)</label><input id="categoryBanner" type="file" accept="image/jpeg,image/png,image/webp"><label><input id="categoryClearBanner" type="checkbox">등록된 배너 제거</label><p id="categoryBannerState"></p><button id="categorySave" onclick="submitCategory(false)">저장</button><button id="categoryDelete" onclick="submitCategory(true)">카테고리 삭제</button><p id="categoryStatus" role="status"></p></section><section id="editor" class="hide"><button onclick="logout()">로그아웃</button><button onclick="reload()">중앙 DB 다시 불러오기</button><h2>메뉴 등록 / 수정</h2><div><button onclick="saveDraftNow()">임시 저장</button><button onclick="restoreDraftPrompt()">임시 저장 불러오기</button><span id="draftState" class="small" role="status"></span></div><details><summary>작성 내용 백업</summary><button onclick="exportMenuDraft()">백업 파일 저장</button><label for="draftFile">백업 파일 불러오기</label><input id="draftFile" type="file" accept="application/json,.json" onchange="importMenuDraft(this.files[0])"></details><label for="menuCategory">기존 메뉴</label><select id="menuCategory" onchange="chooseMenuCategory()"></select><div id="existingMenuField" hidden><label for="existing">메뉴 선택</label><select id="existing" onchange="chooseMenu()"></select>
+<label for="copyCategory">복사할 카테고리</label><select id="copyCategory"></select>
+<button type="button" onclick="copyMenuToCategory()">다른 카테고리로 복사</button></div><div class="grid"><div><label for="category">카테고리</label><select id="category"></select></div><div><label for="price" id="priceLabel">판매가(원)</label><input id="price" type="number" min="0" step="1"></div></div><label><input type="checkbox" id="discounted" onchange="toggleDiscount()"> 할인 제품</label><div id="discountFields" class="hide"><label for="originalPrice">정상가(원)</label><input id="originalPrice" type="number" min="1" step="1"><p class="small">위 판매가 칸에 할인가를 입력하세요. 고객 화면에는 정상가에 회색 취소선이 표시됩니다.</p></div><div id="wineFields" hidden>
+<h3>와인 관리</h3>
+<label for="wineSection">와인 카테고리</label><select id="wineSection"></select>
+<details><summary>와인 카테고리 설정</summary>
+<label for="newWineCategory">추가할 카테고리 이름</label><input id="newWineCategory" maxlength="40">
+<button type="button" onclick="changeWineCategory(false)">카테고리 추가</button>
+<button type="button" onclick="changeWineCategory(true)">선택한 카테고리 삭제</button></details>
+<button type="button" onclick="editWineBanner()">와인 배너 설정</button>
+<div id="wineRatings"></div></div>
+<div id="menuSectionFields"><label for="section">카테고리 안 구분 제목·안내문</label><input id="section" list="sectionTitles" placeholder="예: ※스테이크 주문시 가능[추가 사이드]" oninput="previewSectionTitle()"><datalist id="sectionTitles"></datalist><div id="sectionPreview" class="section-preview" hidden></div><p class="small">메뉴 목록에서 가로선과 함께 표시됩니다. 같은 구분에 넣을 메뉴는 동일한 제목을 사용하고 노출 순서를 연속으로 지정하세요. 기존 제목도 선택할 수 있습니다.</p></div><label for="name">메뉴명</label><input id="name" maxlength="150"><label for="origin">원산지 (메뉴명 아래 회색 표시)</label><input id="origin" placeholder="예: 양념육(쇠고기: 호주산)"><label for="en">영문명</label><input id="en"><label for="tag">표시 배지</label><select id="tag"><option value="">표시 없음</option><option>New</option><option>Special Price</option><option>Premium</option><option>Signature</option><option>Best</option><option>Season</option></select><div id="menuSpicyField"><label for="spicy">매운맛 표시</label><select id="spicy"><option value="0">없음</option><option value="1">1 🔥</option><option value="2">2 🔥🔥</option><option value="3">3 🔥🔥🔥</option></select></div><label for="summary">목록용 간단 설명</label><textarea id="summary"></textarea><label for="detail">상세 설명 (줄바꿈 지원)</label><textarea id="detail" style="min-height:160px"></textarea><label for="allergens">알레르기 정보</label><textarea id="allergens" placeholder="예: 밀, 대두, 토마토, 우유, 돼지고기, 소고기, 굴"></textarea><p class="small">고객 화면에는 [알레르기 정보] 제목 아래 표시됩니다. 제목은 입력하지 않아도 됩니다.</p><label for="caption">이미지 하단 문구</label><input id="caption"><div class="grid"><div><input id="order" type="hidden" value="100"><div id="placementField"><label for="placement">등록 위치</label><select id="placement"><option value="bottom">맨 아래에 추가</option><option value="top">맨 위에 추가</option></select><p class="small">선택한 구분 안에 추가됩니다. 등록 후에는 순서 편집에서 이동할 수 있습니다.</p></div></div><div><label><input type="checkbox" id="active" checked> 고객 화면에 판매 표시</label></div></div><label for="photo">메뉴 사진 (JPG/PNG/WebP, 각 3MB 이하)</label><input type="file" id="photo" accept="image/png,image/jpeg,image/webp"><img class="preview" id="preview" alt="메뉴 사진" hidden><section><h3>기존 옵션 불러오기</h3><label for="optionTemplate">복사할 옵션 그룹</label><select id="optionTemplate"></select><button onclick="importOptionTemplate()">옵션 복사해 추가</button><p class="small">옵션명·사진·추가금·최소/최대 선택 수량을 복사합니다. 원본 메뉴는 변경되지 않습니다.</p></section><div id="optionArea"></div><button onclick="addOptionGroup()">+ 옵션 그룹 추가</button><hr><button id="save" onclick="save()">최종 등록·저장</button><p class="small">성공 안내 후 고객 메뉴북을 새로 열거나 새로고침하여 확인하세요. 이미 열린 화면은 약 30초마다 동기화합니다. 편집 중인 다른 관리자의 변경은 덮어쓰지 않습니다.</p></section><div class="status" id="status" role="status">회사 중앙 DB 관리자</div></main><section id="preorderPanel" class="hide"><h2>선주문 내역 · SPC스퀘어점</h2><p><a href="https://newleave8.github.io/lagrillia-menu/spc-square/tablet-alerts.html" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:#20271e;color:#fff;padding:9px 14px;border-radius:6px;text-decoration:none">태블릿 알림 등록</a></p><div class="grid"><div><label for="preDate">예약일자</label><input id="preDate" type="date" onchange="refreshPreorders()"></div><div><label><input id="preDeleted" type="checkbox" onchange="refreshPreorders()"> 삭제 내역 보기</label><button onclick="refreshPreorders()">새로고침</button><button onclick="$('preDate').value='';refreshPreorders()">전체 날짜</button></div></div><p class="small">내역은 보관됩니다. 삭제한 내역은 삭제 목록에서 복원할 수 있습니다.</p><div class="pre-layout"><div id="preList" class="pre-list"></div><div id="preDetail" class="pre-detail">내역을 선택하세요.</div></div></section>
+<script>
+let token='',db=null,selected='',optionGroups=[],pending=0,optionTemplates=[];const $=id=>document.getElementById(id),status=t=>$('status').textContent=t;
+const cats=['그릴','프로모션','시즌 메뉴','해피아워','세트','파스타','라이스','피자','샐러드','사이드','디저트','음료','맥주','와인'];cats.forEach(c=>$('category').add(new Option(c,c)));
+function call(fn,args){return new Promise((resolve,reject)=>google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[fn](...args))}
+async function signInAdmin(){if(orderAlertsEnabled()) prepareOrderAlertAudio();if(!db)wineMode=false;const b=$('loginButton');b.disabled=true;$('loginStatus').textContent='로그인 중…';let preserved=null;try{if(db&&!$('editor').classList.contains('hide'))preserved=await captureMenuDraft();stopOrderAlerts();token=await call('signin',[$('pin').value]);$('pin').value='';db=await call('loadAdmin',[token]);selected='';fillExisting();chooseMenu();$('login').classList.add('hide');$('adminNav').classList.remove('hide');$('editor').classList.remove('hide');if(preserved){applyMenuDraft(preserved);status('재인증 완료 · 작성 내용을 유지했습니다. 최종 등록·저장을 다시 눌러주세요.')}else{status('회사 중앙 DB 연결 완료');await restoreDraftPrompt(true)}if(orderAlertsEnabled())startOrderAlerts()}catch(e){if(preserved&&db)applyMenuDraft(preserved);$('loginStatus').textContent=e?.message||String(e);status($('loginStatus').textContent)}finally{b.disabled=false;if($('login').classList.contains('hide'))$('loginStatus').textContent=''}}
+async function logout(){if(sortBusy)return;if(sortDirty&&!confirm('저장하지 않은 순서 변경을 버리고 로그아웃할까요?'))return;sortDirty=false;$('manualPanel').classList.add('hide');$('sortPanel').classList.add('hide');document.getElementById('managementNav').open=false;stopOrderAlerts();$('categoryPanel').classList.add('hide');try{await call('signout',[token])}catch(_){}token='';db=null;selectedPreorder=null;preorderRows=[];$('orderBillDialog').close();$('printBill').innerHTML='';$('preDetail').textContent='내역을 선택하세요.';$('editor').classList.add('hide');$('adminNav').classList.add('hide');$('preorderPanel').classList.add('hide');$('login').classList.remove('hide');status('로그아웃되었습니다')}
+async function reload(){try{db=await call('loadAdmin',[token]);selected='';fillExisting();chooseMenu();status('최신 데이터를 불러왔습니다')}catch(e){status(e.message)}}
+let wineMode=false;
+function menuCategories(){if(wineMode)return ['와인'];return [...cats,...db.menus.map(m=>m['카테고리']||'미분류').filter(c=>!cats.includes(c))].filter((c,i,a)=>c!=='와인'&&a.indexOf(c)===i)}
+function fillExisting(){const value=$('category').value;const choices=db.categories||cats.map(id=>({id,name:id}));$('category').replaceChildren(...choices.filter(c=>!c.deleted&&(wineMode?c.id==='와인':c.id!=='와인')).map(c=>new Option(c.name,c.id)));$('category').value=value;const current=db.menus.find(m=>m['메뉴ID']===selected),filter=$('menuCategory');filter.replaceChildren(new Option('신규 등록',''));menuCategories().forEach(c=>{const count=db.menus.filter(m=>(m['카테고리']||'미분류')===c).length;if(count)filter.add(new Option(((db.categories||[]).find(x=>x.id===c)?.name||c)+' ('+count+')',c))});filter.value=current?(current['카테고리']||'미분류'):'';fillCategoryMenus();fillBadges();fillOptionTemplates();fillSectionTitles()}
+function fillCategoryMenus(){const category=$('menuCategory').value,el=$('existing');$('existingMenuField').hidden=!category;el.replaceChildren();if(!category){el.add(new Option('신규 등록',''));selected='';return}const items=db.menus.filter(m=>(m['카테고리']||'미분류')===category).slice().sort((a,b)=>(Number(a['노출순서'])||0)-(Number(b['노출순서'])||0)||String(a['메뉴명']||'').localeCompare(String(b['메뉴명']||''),'ko'));items.forEach(m=>el.add(new Option(m['메뉴명']||'이름 없음',m['메뉴ID'])));if(!items.some(m=>m['메뉴ID']===selected))selected=items[0]?.['메뉴ID']||'';el.value=selected}
+function chooseMenuCategory(){selected='';fillCategoryMenus();chooseMenu()}
+function fillBadges(){const el=$('tag');const values=[...new Set(['New','Special Price','Premium','Signature','Best','Season',...db.menus.map(m=>String(m['배지']||'')).filter(Boolean)])];el.replaceChildren(new Option('표시 없음',''));values.forEach(v=>el.add(new Option(v,v)))}
+function fillSectionTitles(){if(!db)return;const list=$('sectionTitles');list.replaceChildren();[...new Set(db.menus.filter(m=>m['카테고리']===$('category').value).map(m=>String(m['섹션']||'')).filter(Boolean))].forEach(t=>list.append(new Option(t,t)))}
+function previewSectionTitle(){const text=$('section').value.trim();$('sectionPreview').textContent=text;$('sectionPreview').hidden=!text}
+$('category').onchange=fillSectionTitles;
+function toggleDiscount(){const on=$('discounted').checked;$('discountFields').classList.toggle('hide',!on);$('originalPrice').disabled=!on;$('priceLabel').textContent=on?'할인가(원)':'판매가(원)'}
+let copiedMenuImage=null;
+function chooseMenu(copySource){copiedMenuImage=null;draftMainPhoto=null;selected=$('existing').value;const d=copySource||db.menus.find(m=>m['메뉴ID']===selected)||{};for(const [field,key] of Object.entries({name:'메뉴명',en:'영문명',summary:'간단설명',detail:'상세설명',caption:'이미지하단문구',origin:'원산지',allergens:'알레르기정보',price:'판매가(원)',tag:'배지',section:'섹션'}))$(field).value=d[key]??'';$('discounted').checked=d['할인제품']==='Y';$('originalPrice').value=d['정상가(원)']??'';toggleDiscount();$('spicy').value=d['매운맛']??0;const legacy=splitDetail(d['상세설명']);$('detail').value=legacy.detail;$('allergens').value=d['알레르기정보']||legacy.allergens;const category=$('category');
+ for(const option of Array.from(category.options))if(option.dataset.archived)option.remove();
+ const categoryId=d['카테고리'];
+ $('wineFields').hidden=!wineMode;
+ $('menuSectionFields').hidden=wineMode;
+ $('menuSpicyField').hidden=wineMode;
+ fillWineSections(d['섹션']);
+ for(const [id,key] of [['sweetness','당도'],['body','바디']]){
+  $(id).value=d[key]??'';
+  updateWineRating($(id));
+ }
+ const destinations=(db.categories||cats.map(id=>({id,name:id}))).filter(c=>!c.deleted&&c.id!=='와인'&&c.id!==categoryId)
+  .map(c=>new Option(c.name,JSON.stringify([c.id,''])));
+ if(!(db.categories||[]).some(c=>c.id==='와인'&&c.deleted)){
+  for(const name of db.wineCategories||[]){
+   if(categoryId==='와인'&&name===d['섹션'])continue;
+   destinations.push(new Option('와인 · '+name,JSON.stringify(['와인',name])));
+  }
+ }
+ $('copyCategory').replaceChildren(new Option('복사할 카테고리 선택',''),...destinations);
+ if(categoryId&&!Array.from(category.options).some(option=>option.value===categoryId)){
+  const name=(db.categories||[]).find(c=>c.id===categoryId)?.name||categoryId;
+  const option=new Option(name+' (고객 화면 미노출)',categoryId);
+  option.dataset.archived='true';
+  category.add(option);
+ }
+ category.value=categoryId||category.options[0]?.value||'';$('order').value=d['노출순서']??100;$('placement').value='bottom';$('placementField').hidden=!!selected&&!copySource;$('active').checked=d['판매여부']!=='N';$('photo').value='';preview(d['이미지URL']||(d['이미지파일명']?'https://newleave8.github.io/lagrillia-menu/assets/'+encodeURIComponent(d['이미지파일명']):''));const ids=String(d['옵션그룹ID']||'').split(',');optionGroups=db.groups.filter(g=>ids.includes(g['옵션그룹ID'])&&g['사용여부']!=='N').map(g=>({name:g['그룹명'],min:g['최소선택'],max:g['최대선택'],allowDuplicate:g['중복선택허용']==='Y',items:db.items.filter(o=>o['옵션그룹ID']===g['옵션그룹ID']&&o['사용여부']!=='N').map(o=>({name:o['옵션명'],extra:o['추가금액(원)'],spicy:Number(o['매운맛'])||0,imageUrl:o['이미지URL']||(o['이미지파일명']?'https://newleave8.github.io/lagrillia-menu/assets/'+encodeURIComponent(o['이미지파일명']):''),imageName:o['이미지파일명']}))}));renderGroups();fillSectionTitles();previewSectionTitle()}
+
+function copyMenuToCategory(){
+ if($('save').disabled||pending)return;
+ const source=db.menus.find(menu=>menu['메뉴ID']===$('existing').value);
+ const destination=$('copyCategory').value;
+ if(!source||!destination){
+  status('원본 메뉴와 복사할 카테고리를 선택하세요.');
+  return;
+ }
+ if(!confirm('저장된 메뉴를 새 메뉴로 불러옵니다. 현재 입력 중인 수정 내용은 바뀝니다. 계속할까요?'))return;
+ const [target,section]=JSON.parse(destination);
+ wineMode=target==='와인';
+ selected='';
+ fillExisting();
+ chooseMenu(source);
+ copiedMenuImage={url:source['이미지URL']||$('preview').getAttribute('src')||'',name:source['이미지파일명']||''};
+ $('category').querySelectorAll('[data-archived]').forEach(option=>option.remove());
+ $('category').value=target;
+ $('section').value='';
+ $('wineSection').value=section;
+ fillSectionTitles();
+ previewSectionTitle();
+ queueDraft();
+ status('복사할 메뉴를 불러왔습니다. 카테고리와 등록 위치를 확인한 뒤 최종 등록·저장을 눌러주세요.');
+}
+
+function splitDetail(raw){raw=String(raw||'');const m=raw.match(/\[\s*알레르기\s*정보\s*(?::\s*([^\]]*))?\]\s*([\s\S]*)$/);return {detail:m?raw.slice(0,m.index).trimEnd():raw,allergens:m?(m[1]||m[2]||'').trim():''}}
+function copyGroup(g){return {name:g['그룹명'],min:g['최소선택'],max:g['최대선택'],allowDuplicate:g['중복선택허용']==='Y',items:db.items.filter(o=>o['옵션그룹ID']===g['옵션그룹ID']&&o['사용여부']!=='N').map(o=>({name:o['옵션명'],extra:o['추가금액(원)'],spicy:Number(o['매운맛'])||0,imageName:o['이미지파일명'],imageUrl:o['이미지URL']||(o['이미지파일명']?'https://newleave8.github.io/lagrillia-menu/assets/'+encodeURIComponent(o['이미지파일명']):'')}))}}
+function fillOptionTemplates(){optionTemplates=[];const el=$('optionTemplate');el.replaceChildren(new Option('복사할 옵션을 선택하세요',''));db.menus.forEach(m=>{const ids=String(m['옵션그룹ID']||'').split(',');db.groups.filter(g=>ids.includes(g['옵션그룹ID'])&&g['사용여부']!=='N').forEach(g=>{const copy=copyGroup(g);if(!copy.items.length)return;const i=optionTemplates.length;optionTemplates.push(copy);el.add(new Option((m['메뉴명']||'메뉴')+' · '+copy.name+' ('+copy.items.length+'개)',String(i)))})})}
+function importOptionTemplate(){const value=$('optionTemplate').value;if(value===''){status('복사할 옵션을 선택하세요');return}const source=optionTemplates[Number(value)];if(!source)return;optionGroups.push(JSON.parse(JSON.stringify(source)));renderGroups();status('기존 옵션을 복사했습니다. 최종 등록·저장을 누르면 현재 메뉴에만 적용됩니다.')}
+
+function preview(url){$('preview').hidden=!url;$('preview').src=url||''}
+function addOptionGroup(){optionGroups.push({name:'',min:1,max:1,allowDuplicate:true,items:[]});renderGroups()}
+function field(parent,label,value,oninput,type='text'){const lab=document.createElement('label');lab.textContent=label;const inp=document.createElement('input');inp.type=type;if(type==='checkbox')inp.checked=!!value;else inp.value=value??'';inp.oninput=e=>oninput(type==='checkbox'?e.target.checked:e.target.value);parent.append(lab,inp)}
+function button(parent,text,action){const b=document.createElement('button');b.textContent=text;b.onclick=action;parent.append(b)}
+function spiceSelect(parent,value,change){const label=document.createElement('label');label.textContent='매운맛 표시';const select=document.createElement('select');for(let n=0;n<=3;n++)select.add(new Option(n?n+' '+'🔥'.repeat(n):'없음',String(n)));select.value=String(value);select.onchange=e=>change(Number(e.target.value));parent.append(label,select)}
+function renderGroups(){const area=$('optionArea');area.replaceChildren();optionGroups.forEach((g,i)=>{const sec=document.createElement('div');sec.className='opt';const h=document.createElement('h3');h.textContent='옵션 그룹 '+(i+1);sec.append(h);field(sec,'그룹명',g.name,v=>g.name=v);field(sec,'최소 선택',g.min,v=>g.min=v,'number');field(sec,'최대 선택',g.max,v=>g.max=v,'number');field(sec,'같은 항목 중복 선택 허용',g.allowDuplicate,v=>g.allowDuplicate=v,'checkbox');g.items.forEach((o,j)=>{const div=document.createElement('div');div.className='opt';field(div,'옵션명',o.name,v=>o.name=v);field(div,'추가금(원)',o.extra,v=>o.extra=v,'number');spiceSelect(div,o.spicy||0,v=>o.spicy=v);const photo=document.createElement('input');photo.type='file';photo.accept='image/jpeg,image/png,image/webp';photo.onchange=async e=>{pending++;try{o.photo=await readPhoto(e.target.files[0]);renderGroups()}catch(e){status(e.message)}finally{pending--}};div.append(photo);const url=o.photo?.data||o.imageUrl;if(url){const img=document.createElement('img');img.className='preview';img.src=url;div.append(img)}button(div,'항목 삭제',()=>{g.items.splice(j,1);renderGroups()});sec.append(div)});button(sec,'+ 항목',()=>{g.items.push({name:'',extra:0});renderGroups()});button(sec,'그룹 삭제',()=>{optionGroups.splice(i,1);renderGroups()});area.append(sec)})}
+function fillCategorySettings(){
+ const select=$('categoryEdit');
+ select.replaceChildren(new Option('신규 카테고리',''));
+ (db.categories||[]).filter(c=>!c.deleted).forEach(c=>select.add(new Option(c.name,c.id)));
+ showCategorySettings();
+}
+function showCategorySettings(){
+ const row=(db.categories||[]).find(c=>c.id===$('categoryEdit').value);
+ $('categoryName').value=row?.name||'';
+ $('categoryBanner').value='';
+ $('categoryClearBanner').checked=false;
+ $('categoryClearBanner').disabled=!row?.banner;
+ $('categoryBannerState').textContent=row?.banner?'배너 등록됨':'등록된 배너 없음';
+ $('categoryDelete').disabled=!row;
+}
+async function submitCategory(remove){
+ const id=$('categoryEdit').value,save=$('categorySave'),del=$('categoryDelete'),msg=$('categoryStatus');
+ if(remove&&!confirm('이 카테고리를 고객 메뉴에서 제거합니다. 소속 메뉴 데이터는 보관됩니다. 진행할까요?'))return;
+ save.disabled=del.disabled=true;
+ try{
+  const photo=remove?null:await readPhoto($('categoryBanner').files[0]);
+  db.categories=await call('saveCategory',[token,{id,remove,name:$('categoryName').value,photo,clearBanner:$('categoryClearBanner').checked}]);
+  fillCategorySettings();
+  msg.textContent=remove?'카테고리를 삭제했습니다.':'카테고리를 저장했습니다.';
+ }catch(e){msg.textContent=e.message}
+ finally{save.disabled=false;del.disabled=!$('categoryEdit').value}
+}
+function readPhoto(file){if(!file)return Promise.resolve(null);if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>3*1024*1024)return Promise.reject(Error('JPG/PNG/WebP 3MB 이하 사진을 선택하세요'));return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res({name:file.name,mime:file.type,data:r.result});r.onerror=()=>rej(Error('사진 읽기 실패'));r.readAsDataURL(file)})}
+$('photo').onchange=async e=>{try{const f=await readPhoto(e.target.files[0]);preview(f?.data)}catch(e){$('photo').value='';status(e.message)}};
+async function save(){clearTimeout(draftTimer);const b=$('save');if(pending){status('사진을 읽고 있습니다. 잠시 후 저장하세요');return}b.disabled=true;$('existing').disabled=true;$('menuCategory').disabled=true;try{await saveDraftNow(true);const photo=await readPhoto($('photo').files[0])||draftMainPhoto;const d=db.menus.find(m=>m['메뉴ID']===selected)||{};const menu={discounted:$('discounted').checked,originalPrice:$('originalPrice').value,id:selected,category:$('category').value,active:$('active').checked,order:$('order').value,imageUrl:copiedMenuImage?.url||d['이미지URL']||'',imageName:copiedMenuImage?.name||d['이미지파일명']||''};if(!selected)menu.placement=$('placement').value;for(const k of ['name','en','price','summary','detail','caption','section','tag','origin','allergens','spicy'])menu[k]=$(k).value;if(wineMode){menu.category='와인';menu.section=$('wineSection').value;menu.sweetness=$('sweetness').value;menu.body=$('body').value;menu.spicy=0;if(!menu.section)throw Error('와인 카테고리를 선택하세요.');}if(!menu.name.trim()||menu.price==='')throw Error('메뉴명과 판매가를 입력하세요');if(menu.discounted&&(!Number.isSafeInteger(Number(menu.originalPrice))||Number(menu.originalPrice)<=Number(menu.price)))throw Error('정상가를 입력하고, 할인가는 정상가보다 낮게 설정하세요');status('회사 시트·드라이브에 저장 중…');const result=await call('saveAdmin',[token,{menu,photo,groups:optionGroups,revision:db.revision}]);selected=result.id;db=await call('loadAdmin',[token]);fillExisting();chooseMenu();draftMainPhoto=null;await draftStore('delete');$('draftState').textContent='정식 저장 완료';status('중앙 DB 저장 완료 · '+result.id+'\n고객 메뉴북에서 최종 표시를 확인하세요.')}catch(e){status('저장 실패: '+e.message+'\n작성 내용은 유지됩니다.');if(/인증|만료|로그인/.test(e.message)){$('login').classList.remove('hide');$('login').querySelector('h2').textContent='인증 만료 · 다시 로그인';$('pin').focus()}}finally{b.disabled=false;$('existing').disabled=false;$('menuCategory').disabled=false}}
+
+let draftMainPhoto=null,draftTimer,draftQueue=Promise.resolve(),draftRestoring=false;
+const DRAFT_FIELDS=['category','name','en','price','summary','detail','caption','section','tag','origin','allergens','spicy','order','placement','originalPrice','wineSection','sweetness','body'];
+function draftStore(mode,value){return new Promise((resolve,reject)=>{const req=indexedDB.open('lag-menu-admin-drafts-spc-square',1);req.onupgradeneeded=()=>req.result.createObjectStore('drafts');req.onerror=()=>reject(Error('이 브라우저에서 임시 저장 공간을 열 수 없습니다. 백업 파일 저장을 이용하세요.'));req.onsuccess=()=>{const dbi=req.result,tx=dbi.transaction('drafts',mode==='get'?'readonly':'readwrite'),store=tx.objectStore('drafts');let result;const op=mode==='get'?store.get('spc-square-menu'):mode==='delete'?store.delete('spc-square-menu'):store.put(value,'spc-square-menu');op.onsuccess=()=>result=op.result;tx.oncomplete=()=>{dbi.close();resolve(result)};tx.onerror=()=>{dbi.close();reject(Error('임시 저장 실패: 저장 공간을 확인하거나 백업 파일을 저장하세요.'))}}})}
+async function captureMenuDraft(){if(!db)throw Error('먼저 로그인해 주세요.');if(pending)throw Error('사진을 읽고 있습니다. 잠시 후 임시 저장하세요.');const fields=Object.fromEntries(DRAFT_FIELDS.map(k=>[k,$(k).value]));fields.active=$('active').checked;fields.discounted=$('discounted').checked;return {kind:'lag-menu-draft',version:1,wineMode,savedAt:new Date().toISOString(),selected,fields,groups:JSON.parse(JSON.stringify(optionGroups)),mainPhoto:await readPhoto($('photo').files[0])||draftMainPhoto,baseRevision:db.revision,copiedMenuImage,source:db.menus.find(m=>m['메뉴ID']===selected)||null}}
+function saveDraftNow(quiet=false){const task=draftQueue.catch(()=>{}).then(async()=>{const draft=await captureMenuDraft();await draftStore('put',draft);$('draftState').textContent='임시 저장 '+new Date(draft.savedAt).toLocaleTimeString('ko-KR');if(!quiet)status('이 브라우저에 작성 내용을 임시 저장했습니다. 재인증 후 불러올 수 있습니다.');return draft});draftQueue=task;return task.catch(e=>{$('draftState').textContent=e.message;if(!quiet)status(e.message);throw e})}
+function applyMenuDraft(d){if(d?.kind!=='lag-menu-draft'||d.version!==1||!d.fields||!Array.isArray(d.groups))throw Error('올바른 메뉴 백업 파일이 아닙니다.');draftRestoring=true;try{if(d.source&&d.selected){const index=db.menus.findIndex(m=>m['메뉴ID']===d.selected);if(index<0)db.menus.push(d.source);else db.menus[index]=d.source}wineMode=d.wineMode===true||d.fields.category==='와인';selected=d.selected||'';fillExisting();chooseMenu();DRAFT_FIELDS.forEach(k=>{if(d.fields[k]!=null)$(k).value=String(d.fields[k])});for(const id of ['sweetness','body'])updateWineRating($(id));$('active').checked=d.fields.active!==false;$('discounted').checked=!!d.fields.discounted;toggleDiscount();optionGroups=JSON.parse(JSON.stringify(d.groups));draftMainPhoto=d.mainPhoto||null;copiedMenuImage=d.copiedMenuImage||null;$('photo').value='';if(draftMainPhoto)preview(draftMainPhoto.data);else if(copiedMenuImage)preview(copiedMenuImage.url);renderGroups();fillSectionTitles();previewSectionTitle();if(d.baseRevision)db.revision=d.baseRevision;$('draftState').textContent='임시 저장 복원 완료';}finally{draftRestoring=false}}
+async function restoreDraftPrompt(onLogin=false){try{const d=await draftStore('get');if(!d){if(!onLogin)status('저장된 임시 내용이 없습니다.');return}if(!confirm(new Date(d.savedAt).toLocaleString('ko-KR')+'에 임시 저장한 메뉴를 불러오시겠습니까? 현재 입력 내용은 바뀝니다.'))return;applyMenuDraft(d);status('임시 저장 내용을 복원했습니다. 확인 후 최종 등록·저장을 눌러주세요.')}catch(e){status(e.message)}}
+async function exportMenuDraft(){try{const d=await saveDraftNow(true);const blob=new Blob([JSON.stringify(d)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='라그릴리아_메뉴_임시백업_'+Date.now()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);status('작성 내용 백업 파일을 저장했습니다.')}catch(e){status(e.message)}}
+async function importMenuDraft(file){if(!file)return;try{if(file.size>25*1024*1024)throw Error('백업 파일이 너무 큽니다.');const d=JSON.parse(await file.text());if(!confirm('백업 파일의 작성 내용을 불러오시겠습니까? 현재 입력 내용은 바뀝니다.'))return;applyMenuDraft(d);await saveDraftNow(true);status('백업 파일에서 작성 내용을 복원했습니다.')}catch(e){status('백업 복원 실패: '+e.message)}finally{$('draftFile').value=''}}
+function queueDraft(){if(draftRestoring||!db||$('save').disabled||$('editor').classList.contains('hide'))return;clearTimeout(draftTimer);draftTimer=setTimeout(()=>saveDraftNow(true).catch(()=>{}),700)}
+$('editor').addEventListener('input',queueDraft);$('editor').addEventListener('change',queueDraft);
+$('optionArea').addEventListener('click',queueDraft);
+window.addEventListener('beforeunload',e=>{if(db&&!$('editor').classList.contains('hide')){e.preventDefault();e.returnValue=''}});
+
+
+let orderAlertAudio, orderAlertTimer, orderAlertSession;
+let orderAlertSpeech;
+function playOrderAlert() {
+  const speech = window.speechSynthesis;
+  if (!speech || typeof SpeechSynthesisUtterance !== 'function') return playOrderChime();
+  if (orderAlertSpeech) return;
+  const voices = speech.getVoices();
+  const koreanVoice = voices.find(voice => /^ko(?:[-_]|$)/i.test(voice.lang));
+  if (voices.length && !koreanVoice) return playOrderChime();
+
+  const message = new SpeechSynthesisUtterance('신규 주문이 접수되었습니다.');
+  message.lang = 'ko-KR';
+  if (koreanVoice) message.voice = koreanVoice;
+  orderAlertSpeech = message;
+  message.onend = () => {
+    if (orderAlertSpeech === message) orderAlertSpeech = null;
+  };
+  message.onerror = () => {
+    if (orderAlertSpeech !== message) return;
+    orderAlertSpeech = null;
+    playOrderChime();
+  };
+  speech.speak(message);
+}
+function stopOrderAlertSpeech() {
+  if (!orderAlertSpeech) return;
+  orderAlertSpeech = null;
+  window.speechSynthesis.cancel();
+}
+function playOrderChime() {
+  if (orderAlertAudio?.state !== 'running') return;
+  for (const [offset, frequency] of [[0, 660], [0.24, 880], [0.65, 660], [0.89, 880], [1.3, 660], [1.54, 880]]) {
+    const start = orderAlertAudio.currentTime + offset;
+    const tone = orderAlertAudio.createOscillator();
+    const volume = orderAlertAudio.createGain();
+    tone.frequency.value = frequency;
+    volume.gain.setValueAtTime(0.15, start);
+    volume.gain.exponentialRampToValueAtTime(0.001, start + 0.2);
+    tone.connect(volume).connect(orderAlertAudio.destination);
+    tone.start(start);
+    tone.stop(start + 0.2);
+  }
+}
+function stopOrderAlerts() {
+  orderAlertSession = null;
+  stopOrderAlertSpeech();
+  clearTimeout(orderAlertTimer);
+  $('orderAlertBanner').classList.add('hide');
+  $('orderAlertToggle').textContent = '화면 알림 켜기';
+  $('orderAlertStatus').textContent = '';
+}
+const ORDER_ALERT_PREFERENCE = 'lagrillia:admin:spc-square:order-alerts';
+function orderAlertsEnabled() {
+  try { return localStorage.getItem(ORDER_ALERT_PREFERENCE) === 'on'; }
+  catch (_) { return false; }
+}
+function prepareOrderAlertAudio() {
+  try {
+    orderAlertAudio ||= new AudioContext();
+    orderAlertAudio.resume().catch(() => {});
+  } catch (_) {}
+}
+function toggleOrderAlerts() {
+  const enabled = !orderAlertSession;
+  try { localStorage.setItem(ORDER_ALERT_PREFERENCE, enabled ? 'on' : 'off'); }
+  catch (_) {}
+  if (!enabled) return stopOrderAlerts();
+  prepareOrderAlertAudio();
+  startOrderAlerts();
+}
+function startOrderAlerts() {
+  if (!token || orderAlertSession) return;
+  orderAlertSession = {token};
+  $('orderAlertToggle').textContent = '화면 알림 끄기';
+  $('orderAlertStatus').textContent = '주문 확인 중…';
+  pollOrderAlerts(orderAlertSession);
+}
+async function pollOrderAlerts(session) {
+  if (orderAlertSession !== session) return;
+  try {
+    const rows = await call('listPreorders', [session.token, {}]);
+    if (orderAlertSession !== session) return;
+    const unread = new Set(rows.filter(row => row.state === '신규').map(row => row.id));
+    $('orderAlertBanner').classList.toggle('hide', !unread.size);
+    $('orderAlertMessage').textContent = '미확인 선주문 ' + unread.size + '건';
+    $('orderAlertStatus').textContent = '화면 알림 켜짐 · 미확인 시 30초마다 알림';
+    if (unread.size) playOrderAlert();
+    else stopOrderAlertSpeech();
+  } catch (_) {
+    if (orderAlertSession !== session) return;
+    $('orderAlertStatus').textContent = '알림 조회 실패 · 로그인 상태를 확인하세요.';
+  } finally {
+    if (orderAlertSession === session) orderAlertTimer = setTimeout(() => pollOrderAlerts(session), 30000);
+  }
+}
+</script><dialog id="orderBillDialog" aria-label="선주문서"><form method="dialog" class="bill-toolbar"><button autofocus>닫기</button></form><div id="printBill"></div></dialog><script>
+let preorderRows=[],selectedPreorder=null,preorderLoading=false;
+const preEsc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function switchAdminView(view){
+ if(sortBusy)return;
+ if(view!=='sorting'&&sortDirty&&!confirm('저장하지 않은 순서 변경을 버리고 이동할까요?'))return;
+ if(view!=='sorting')sortDirty=false;
+ $('sortPanel').classList.toggle('hide',view!=='sorting');
+ if(view==='sorting')openSortOrder();
+ if((view==='menus'||view==='wine')&&wineMode!==(view==='wine')){
+  if($('save').disabled||pending)return;
+  clearTimeout(draftTimer);
+  wineMode=view==='wine';
+  selected='';
+  fillExisting();
+  chooseMenu();
+ }$('categoryPanel').classList.toggle('hide',view!=='categories');if(view==='categories')fillCategorySettings();$('editor').classList.toggle('hide',view!=='menus'&&view!=='wine');$('preorderPanel').classList.toggle('hide',view!=='orders');if(view==='orders')refreshPreorders();$('manualPanel').classList.toggle('hide',view!=='manual');if(view==='manual')showManualTopic(currentManualTopic)}
+async function refreshPreorders(){if(preorderLoading||!token)return;preorderLoading=true;try{preorderRows=await call('listPreorders',[token,{date:$('preDate').value,deleted:$('preDeleted').checked}]);$('preList').innerHTML=preorderRows.length?preorderRows.map((r,i)=>'<button class="pre-row" onclick="selectPreorder('+i+')"><b>'+preEsc(r.name)+' · '+preEsc(r.phone)+'</b> <span class="pre-state">'+preEsc(r.state)+'</span><br><span>'+preEsc(r.date)+' · '+preEsc(r.number)+'</span><br><span class="small">접수 '+preEsc(r.submittedAt)+'</span></button>').join(''):'<p>접수 내역이 없습니다.</p>';status('선주문 '+preorderRows.length+'건 · 최신 내역을 불러왔습니다.')}catch(e){status('선주문 조회 실패: '+e.message)}finally{preorderLoading=false}}
+async function selectPreorder(i){try{selectedPreorder=await call('getPreorder',[token,preorderRows[i].id]);renderPreorderDetail()}catch(e){status(e.message)}}
+function renderPreorderDetail(){const r=selectedPreorder;$('preDetail').innerHTML='<h3>'+preEsc(r.name)+' 고객 선주문</h3><p>예약일자 '+preEsc(r.date)+'<br><b>메뉴 제공 시간 '+preEsc(r.serveTime||'미지정')+'</b><br>휴대폰 뒤 4자리 '+preEsc(r.phone)+'<br>접수번호 '+preEsc(r.number)+' · '+preEsc(r.state)+'<br>접수시간 '+preEsc(r.submittedAt)+'</p><div class="pre-table-wrap"><table class="pre-table"><thead><tr><th>메뉴 / 선택 옵션</th><th>수량</th><th>금액</th></tr></thead><tbody>'+r.lines.map(l=>'<tr><td><b>'+preEsc(l.name)+'</b>'+l.options.map(o=>'<div class="small">'+preEsc(o.groupName)+' · '+preEsc(o.name)+' × '+o.totalQuantity+'</div>').join('')+'</td><td>'+l.quantity+'</td><td>'+l.amount.toLocaleString('ko-KR')+'원</td></tr>').join('')+'</tbody></table></div><p class="pre-total">예상 총액 '+r.total.toLocaleString('ko-KR')+'원</p>'+(r.note?'<div class="pre-note"><b>고객 요청사항</b><div>'+preEsc(r.note)+'</div></div>':'')+'<button onclick="printPreorder()">내역 출력</button>'+(r.state==='삭제'?'<button onclick="actPreorder(\'restore\')">복원</button>':'<button onclick="actPreorder(\'check\')">확인 표시</button><button class="pre-delete" onclick="actPreorder(\'delete\')">삭제</button>')}
+async function actPreorder(action){if(!selectedPreorder)return;if(action==='delete'&&!confirm(selectedPreorder.number+' 내역을 삭제 목록으로 이동하시겠습니까?'))return;try{await call('changePreorderState',[token,selectedPreorder.id,action]);selectedPreorder=null;$('preDetail').textContent='처리 완료 · 내역을 선택하세요.';await refreshPreorders()}catch(e){status('처리 실패: '+e.message)}}
+function preorderBillHTML(r){return '<h1>≪ 선 주 문 서 ≫</h1><div>주문시간 : '+preEsc(r.submittedAt)+'</div><div>주문번호 : '+preEsc(r.number)+'</div><div>예약일자 : '+preEsc(r.date)+'</div><div>주문자 성함 : '+preEsc(r.name)+'</div><div>연락처 : '+preEsc(r.phone)+'</div><div style="font-size:22px;font-weight:bold;margin:10px 0">메뉴 제공 시간 : '+preEsc(r.serveTime||'미지정')+'</div><div class="bill-table">[ 테 이 블 ]<strong>선주문</strong></div>'+r.lines.map(l=>'<div class="bill-item"><div class="bill-line bill-menu"><span>'+preEsc(l.name)+'</span><b>'+l.quantity+'</b></div>'+l.options.map(o=>'<div class="bill-line bill-option"><span>&gt;&gt;&gt; '+preEsc(o.name)+'</span><span>'+o.totalQuantity+'</span></div>').join('')+'</div>').join('')+(String(r.note||'').trim()?'<div class="bill-note"><b>고객 요청사항</b><div>'+preEsc(r.note)+'</div></div>':'')}
+function printPreorder(){if(!selectedPreorder)return;$('printBill').innerHTML=preorderBillHTML(selectedPreorder);$('orderBillDialog').showModal();$('orderBillDialog').scrollTop=0}
+
+function fillWineSections(value){
+ const select=$('wineSection');
+ select.replaceChildren(new Option('와인 카테고리 선택',''),...(db.wineCategories||[]).map(name=>new Option(name,name)));
+ select.value=(db.wineCategories||[]).includes(value)?value:'';
+}
+async function changeWineCategory(remove){
+ const name=$(remove?'wineSection':'newWineCategory').value.trim();
+ if(!name)return status('카테고리 이름을 입력하거나 삭제할 카테고리를 선택하세요.');
+ if(remove&&!confirm(name+' 카테고리를 삭제할까요?'))return;
+ try{
+  db.wineCategories=await call('updateWineCategory',[token,name,remove]);
+  fillWineSections(remove?'':name);
+  $('newWineCategory').value='';
+  status(remove?'와인 카테고리를 삭제했습니다.':'와인 카테고리를 추가했습니다.');
+ }catch(error){status(error.message)}
+}
+function editWineBanner(){
+ switchAdminView('categories');
+ $('categoryEdit').value='와인';
+ showCategorySettings();
+}
+function updateWineRating(input){
+ for(const button of input.parentElement.querySelectorAll('button')){
+  const value=Number(button.value);
+  button.textContent=value<=Number(input.value)?'●':'○';
+  button.setAttribute('aria-pressed',String(value===Number(input.value)));
+ }
+}
+for(const [id,label] of [['sweetness','당도'],['body','바디']]){
+ const field=document.createElement('fieldset');
+ const legend=document.createElement('legend');
+ legend.textContent=label;
+ const input=document.createElement('input');
+ input.type='hidden';
+ input.id=id;
+ field.append(legend,input);
+ for(let value=1;value<=5;value++){
+  const button=document.createElement('button');
+  button.type='button';
+  button.value=value;
+  button.textContent='○';
+  button.setAttribute('aria-label',label+' '+value+'단계');
+  button.setAttribute('aria-pressed','false');
+  button.onclick=()=>{
+   input.value=input.value===button.value?'':button.value;
+   updateWineRating(input);
+   queueDraft();
+  };
+  field.append(button);
+ }
+ $('wineRatings').append(field);
+}
+$('loginButton').addEventListener('click',signInAdmin);
+$('pin').addEventListener('keydown',event=>{
+ if(event.key==='Enter'&&!$('loginButton').disabled)signInAdmin();
+});
+</script>
+<script>
+let sortItems=[],sortCategoryValue='',sortRevision='',sortDirty=false,sortBusy=false,sortDrag=null;
+function sortSection(menu){return String(menu['섹션']||'').trim()}
+function sortCategoryItems(category){
+ const ordered=db.menus.filter(menu=>menu['메뉴ID']&&String(menu['카테고리']||'')===category).slice()
+  .sort((a,b)=>(Number(a['노출순서'])||9999)-(Number(b['노출순서'])||9999));
+ const groups=new Map();
+ for(const menu of ordered){const section=sortSection(menu);if(!groups.has(section))groups.set(section,[]);groups.get(section).push(menu)}
+ return Array.from(groups.values()).flat();
+}
+function setSortBusy(busy){
+ sortBusy=busy;
+ $('sortCategory').disabled=busy;$('sortReload').disabled=busy;$('sortSave').disabled=busy||!sortDirty;
+ $('sortRows').querySelectorAll('button').forEach(button=>button.disabled=busy);
+}
+async function openSortOrder(){
+ if(sortDirty&&!confirm('저장하지 않은 순서 변경을 버리고 최신 목록을 불러올까요?'))return;
+ setSortBusy(true);$('sortStatus').textContent='최신 메뉴를 불러오는 중…';
+ try{
+  const latest=await call('loadAdmin',[token]);db=latest;sortRevision=latest.revision;
+  const names=new Map((db.categories||[]).map(category=>[String(category.id),category.name]));
+  const categories=[...new Set(db.menus.filter(menu=>menu['메뉴ID']).map(menu=>String(menu['카테고리']||'')))];
+  $('sortCategory').replaceChildren();
+  for(const category of categories)$('sortCategory').add(new Option(names.get(category)||category||'미분류',category));
+  if(!categories.includes(sortCategoryValue))sortCategoryValue=categories[0]||'';
+  $('sortCategory').value=sortCategoryValue;sortItems=sortCategoryItems(sortCategoryValue);sortDirty=false;
+  renderSortRows();$('sortStatus').textContent='순서를 바꾼 뒤 순서 저장을 눌러주세요.';
+ }catch(error){$('sortStatus').textContent='불러오기 실패: '+error.message}
+ finally{setSortBusy(false);renderSortRows()}
+}
+function reloadSortOrder(){openSortOrder()}
+function changeSortCategory(){
+ if(sortDirty&&!confirm('저장하지 않은 순서 변경을 버리고 카테고리를 바꿀까요?')){$('sortCategory').value=sortCategoryValue;return}
+ sortCategoryValue=$('sortCategory').value;sortItems=sortCategoryItems(sortCategoryValue);sortDirty=false;renderSortRows();
+ $('sortStatus').textContent='순서를 바꾼 뒤 순서 저장을 눌러주세요.';
+}
+function renderSortRows(){
+ const area=$('sortRows');area.replaceChildren();let section=null;
+ for(let index=0;index<sortItems.length;index++){
+  const menu=sortItems[index],group=sortSection(menu);
+  if(group!==section){const title=document.createElement('div');title.className='sort-section';title.textContent=group||'구분 없음';area.append(title);section=group}
+  const row=document.createElement('div');row.className='sort-row';row.dataset.menuId=String(menu['메뉴ID']);
+  const handle=document.createElement('button');handle.type='button';handle.className='sort-handle';handle.textContent='≡';handle.setAttribute('aria-label',(menu['메뉴명']||'메뉴')+' 이동 손잡이');handle.disabled=sortBusy;
+  handle.addEventListener('pointerdown',event=>startSortDrag(event,handle,String(menu['메뉴ID'])));row.append(handle);
+  const url=String(menu['이미지URL']||'');
+  const fallback=menu['이미지파일명']?'https://newleave8.github.io/lagrillia-menu/assets/'+encodeURIComponent(menu['이미지파일명']):'';
+  if(/^https:\/\//.test(url)||fallback){const photo=document.createElement('img');photo.src=/^https:\/\//.test(url)?url:fallback;photo.alt='';photo.loading='lazy';photo.onerror=()=>photo.remove();row.append(photo)}
+  const name=document.createElement('div');name.className='sort-row-name';name.textContent=menu['메뉴명']||'이름 없음';
+  if(String(menu['판매여부']).toUpperCase()!=='Y'){const state=document.createElement('span');state.className='sort-hidden';state.textContent='숨김';name.append(state)}row.append(name);
+  const arrows=document.createElement('div');arrows.className='sort-arrows';
+  for(const [delta,label] of [[-1,'↑'],[1,'↓']]){
+   const button=document.createElement('button');button.type='button';button.textContent=label;
+   button.setAttribute('aria-label',(menu['메뉴명']||'메뉴')+(delta<0?' 위로':' 아래로'));
+   button.disabled=sortBusy||!sortItems[index+delta]||sortSection(sortItems[index+delta])!==group;
+   button.onclick=()=>moveSortItem(index,index+delta);arrows.append(button);
+  }
+  row.append(arrows);area.append(row);
+ }
+ if(!sortItems.length)area.textContent='등록된 메뉴가 없습니다.';
+ $('sortSave').disabled=sortBusy||!sortDirty;
+}
+function moveSortItem(from,to){
+ if(sortBusy||from===to||!sortItems[from]||!sortItems[to]||sortSection(sortItems[from])!==sortSection(sortItems[to]))return;
+ const [menu]=sortItems.splice(from,1);sortItems.splice(to,0,menu);sortDirty=true;renderSortRows();$('sortStatus').textContent='변경한 순서가 아직 저장되지 않았습니다.';
+}
+function startSortDrag(event,handle,id){
+ if(sortBusy||event.button!==0)return;
+ event.preventDefault();handle.setPointerCapture(event.pointerId);sortDrag={id,target:null,after:false};handle.closest('.sort-row').classList.add('drag-source');
+ const move=pointer=>{
+  if(!sortDrag)return;
+  document.querySelectorAll('.drop-before,.drop-after').forEach(row=>row.classList.remove('drop-before','drop-after'));
+  const row=document.elementFromPoint(pointer.clientX,pointer.clientY)?.closest('.sort-row');
+  const source=sortItems.find(menu=>String(menu['메뉴ID'])===id),target=sortItems.find(menu=>String(menu['메뉴ID'])===row?.dataset.menuId);
+  sortDrag.target=null;
+  if(row&&target&&source&&target!==source&&sortSection(source)===sortSection(target)){
+   sortDrag.target=row.dataset.menuId;sortDrag.after=pointer.clientY>row.getBoundingClientRect().top+row.offsetHeight/2;
+   row.classList.add(sortDrag.after?'drop-after':'drop-before');
+  }
+  if(pointer.clientY<80)window.scrollBy(0,-24);
+  if(pointer.clientY>window.innerHeight-80)window.scrollBy(0,24);
+ };
+ const finish=pointer=>{
+  handle.removeEventListener('pointermove',move);handle.removeEventListener('pointerup',finish);handle.removeEventListener('pointercancel',finish);
+  const drag=sortDrag;sortDrag=null;
+  if(pointer.type==='pointerup'&&drag?.target){
+   const from=sortItems.findIndex(menu=>String(menu['메뉴ID'])===id),target=sortItems.findIndex(menu=>String(menu['메뉴ID'])===drag.target);
+   let to=target+(drag.after?1:0);if(from<to)to--;
+   moveSortItem(from,to);
+  }
+  renderSortRows();
+ };
+ handle.addEventListener('pointermove',move);handle.addEventListener('pointerup',finish);handle.addEventListener('pointercancel',finish);
+}
+async function saveSortOrder(){
+ if(sortBusy||!sortDirty)return;
+ setSortBusy(true);$('sortStatus').textContent='순서를 저장하는 중…';
+ try{
+  const result=await call('saveMenuOrder',[token,{category:sortCategoryValue,ids:sortItems.map(menu=>String(menu['메뉴ID'])),revision:sortRevision}]);
+  sortItems.forEach((menu,index)=>menu['노출순서']=(index+1)*10);
+  sortRevision=result.revision;db.revision=result.revision;sortDirty=false;
+  $('sortStatus').textContent='순서를 저장했습니다. 고객 화면은 다음 메뉴 갱신 시 반영됩니다.';
+ }catch(error){$('sortStatus').textContent='저장 실패: '+error.message+' 변경한 순서는 이 화면에 유지됩니다.'}
+ finally{setSortBusy(false);renderSortRows()}
+}
+window.addEventListener('beforeunload',event=>{if(sortDirty||sortBusy){event.preventDefault();event.returnValue=''}});
+
+</script><script>
+
+const adminManualTopics = [["start", "처음 시작하기", "매장 운영 전, 이 순서로 확인하세요.", ["관리자 비밀번호로 로그인합니다. 로그인 세션은 로그인 시점부터 16시간 동안 유지됩니다.", "관리에서 메뉴·와인·카테고리를 확인하고, 고객 화면에서 사진·가격·선택 옵션을 확인합니다.", "화면 알림 켜기를 누른 후 테스트 주문을 접수하고, 선주문 내역에서 확인 표시까지 진행합니다."], "매장 운영 기기는 관리자 화면을 열어두세요. 매뉴얼을 보는 중에도 켜둔 화면 알림은 유지됩니다.", [["관리자 로그인", "관리자 비밀번호 입력 → 로그인"], ["관리 ▾", "메뉴 / 와인 / 카테고리 / 순서 편집"], ["운영 전 확인", "고객 화면 확인 → 테스트 접수 → 확인 표시"]]], ["menu", "메뉴 등록·수정", "관리 → 메뉴 관리", ["기존 메뉴에서 새 메뉴 등록을 선택하거나, 카테고리와 수정할 메뉴를 선택합니다.", "카테고리·구분 제목·메뉴명·판매가를 입력합니다. 원산지·영문명·배지·매운맛·설명·알레르기·이미지 하단 문구는 필요한 항목을 입력합니다.", "할인 제품은 할인 제품을 체크하고 판매가에 할인가, 정상가 칸에 할인 전 가격을 입력합니다. 금액은 원 단위로 입력합니다.", "사진을 선택하고 고객 화면에 판매 표시를 확인한 뒤 최종 등록·저장을 누릅니다. 새 메뉴의 등록 위치는 같은 구분의 맨 위 또는 맨 아래를 선택할 수 있습니다."], "사진은 JPG·PNG·WebP, 3MB 이하입니다. 판매 표시를 해제하고 저장하면 고객 화면에서 숨깁니다. 저장 성공 안내 후 고객 화면을 확인하세요.", [["기본 정보", "카테고리 · 구분 제목 · 메뉴명 · 판매가(원)"], ["할인 제품 ☑", "판매가 39000 / 정상가 54000"], ["고객 화면에 판매 표시 ☑", "등록 위치: 맨 위 / 맨 아래 → 최종 등록·저장"]]], ["options", "옵션 구성·불러오기", "메뉴 관리 / 와인 관리 → 옵션", ["옵션 그룹 추가를 누르고 그룹 이름, 최소·최대 선택 수량을 설정합니다.", "선택 항목마다 이름·추가금·필요한 사진과 매운맛을 입력합니다. 같은 항목을 여러 번 고르게 하려면 중복 선택 설정을 확인합니다.", "기존 옵션 불러오기에서 그룹을 선택한 뒤 옵션 복사해 추가를 누르면 현재 메뉴에 가져옵니다.", "복사한 항목과 수량 조건을 확인하고 메뉴의 최종 등록·저장을 누릅니다."], "최소 선택 수량이 1 이상이면 필수 옵션입니다. 최소는 최대보다 클 수 없습니다. 복사한 옵션 수정은 원본 메뉴에 반영되지 않습니다.", [["옵션 그룹 · 사이드 선택", "최소 1 / 최대 2 / 중복 선택 설정"], ["선택 항목", "가든샐러드 +0원 / 매쉬드 포테이토 +0원"], ["기존 옵션 불러오기", "그룹 선택 → 옵션 복사해 추가 → 최종 등록·저장"]]], ["copy", "다른 카테고리로 복사", "기존 메뉴 선택 → 다른 카테고리로 복사", ["복사할 원본 메뉴를 기존 메뉴에서 불러옵니다.", "복사할 카테고리에서 목적지를 고르고 다른 카테고리로 복사를 누릅니다. 일반 메뉴와 와인 사이에도 복사할 수 있습니다.", "복사된 내용에서 메뉴명·가격·사진·옵션과 목적지에 필요한 항목을 확인합니다. 와인은 와인 카테고리와 당도·바디도 확인합니다.", "최종 등록·저장을 눌러 새 메뉴로 등록합니다."], "원본 메뉴는 그대로 유지됩니다. 복사 전에 작성하던 내용이 있다면 먼저 임시 저장 또는 백업하세요.", [["원본 메뉴", "프로모션 메뉴 선택"], ["복사할 카테고리", "세트 / 와인 등 목적지 선택"], ["다른 카테고리로 복사", "내용 확인 → 최종 등록·저장"]]], ["draft", "임시 저장·백업", "메뉴 등록 / 수정 → 임시 저장", ["작성 중 임시 저장을 누르면 현재 브라우저에 작성 내용을 보관합니다. 임시 저장 불러오기로 복구할 수 있습니다.", "다른 기기로 옮기거나 별도 파일을 보관하려면 작성 내용 백업을 열고 백업 파일 저장을 누릅니다.", "백업 파일 불러오기에서 저장한 JSON 파일을 선택해 내용을 가져옵니다.", "내용을 확인하고 최종 등록·저장을 눌러야 고객 메뉴에 반영됩니다."], "임시 저장은 중앙 DB 저장이 아닙니다. 다른 브라우저·기기로 자동 공유되지 않으며, 브라우저 데이터 삭제 시 사라질 수 있습니다. 중앙 DB 다시 불러오기 전 작성 내용을 보관하세요.", [["임시 저장", "현재 브라우저에 작성 내용 보관"], ["작성 내용 백업 ▾", "백업 파일 저장 / 백업 파일 불러오기"], ["최종 등록·저장", "중앙 DB 저장 성공 안내 확인"]]], ["wine", "와인 관리", "관리 → 와인 관리", ["와인 카테고리를 선택하고 메뉴 관리와 같은 방식으로 이름·가격·설명·사진·옵션을 등록합니다.", "당도와 바디는 각각 5칸에서 수준을 선택합니다. 고객 화면에는 채워진 원으로 표시됩니다. 와인에는 메뉴 매운맛 항목이 표시되지 않습니다.", "와인 카테고리 설정을 열면 새 카테고리를 추가하거나 선택한 카테고리를 삭제할 수 있습니다. 삭제 전 소속 와인과 고객 화면을 확인하세요.", "와인 배너 설정은 카테고리 관리로 이동합니다. 저장 후 고객 화면의 와인 메인과 개별 목록을 확인합니다."], "와인 가격도 원 단위로 입력합니다. 고객 화면의 가격 표기와 관리자 입력 단위가 다르므로 39,000원은 39000으로 입력하세요.", [["와인 카테고리", "스파클링 와인 ▾ / 카테고리 설정"], ["당도 · 바디", "당도 ●○○○○    바디 ●●●○○"], ["와인 배너 설정", "카테고리 관리 → 배너 선택 → 저장"]]], ["categories", "카테고리·배너 관리", "관리 → 카테고리 관리", ["편집할 카테고리를 선택합니다.", "카테고리 이름을 수정하거나 상단 가로형 배너 파일을 선택합니다. 배너는 JPG·PNG·WebP, 최대 3MB입니다.", "기존 배너를 없애려면 등록된 배너 제거를 체크하고 저장합니다.", "저장 후 고객 화면에서 이름과 배너를 확인합니다. 카테고리 삭제는 적용 대상을 확인한 뒤 진행하세요."], "배너 이미지의 비율에 따라 표시가 달라질 수 있습니다. 글자·가격이 잘리지 않는지 휴대폰에서도 확인하세요. 와인 하위 카테고리는 와인 관리에서 설정합니다.", [["편집할 카테고리", "와인 ▾"], ["상단 가로형 배너", "파일 선택 · JPG / PNG / WebP · 최대 3MB"], ["등록된 배너 제거 □", "이름과 배너 확인 → 저장"]]], ["sorting", "메뉴 순서 편집", "관리 → 메뉴 순서 편집", ["카테고리를 선택하고 현재 메뉴 목록을 확인합니다.", "≡ 손잡이를 잡고 위아래로 이동합니다. 터치 조작이 불편하면 ↑↓ 버튼을 사용합니다.", "같은 구분 안에서만 이동합니다. 다른 구분으로 옮기려면 메뉴 관리에서 구분 제목을 수정하고 저장하세요.", "순서 저장을 눌러 반영합니다. 최신 목록 불러오기는 저장하지 않은 변경을 버릴 수 있으므로 안내를 확인하세요."], "드래그만 해서는 저장되지 않습니다. 다른 화면으로 이동하기 전에 순서 저장을 누르고 고객 화면을 확인하세요.", [["카테고리 선택", "그릴 ▾ / 프리미엄 스테이크"], ["≡ 티본 스테이크          ↑ ↓", "≡ 본인립아이 스테이크      ↑ ↓"], ["순서 저장", "이동 → 저장 → 고객 화면 확인"]]], ["orders", "선주문 확인·삭제·복원", "상단 → 선주문 내역", ["예약일자를 선택해 조회하거나 전체 날짜를 눌러 전체 내역을 봅니다. 새로고침으로 최신 목록을 가져옵니다.", "내역을 선택해 예약일자·메뉴 제공 시간·고객명·휴대폰 뒤 4자리·메뉴·옵션·수량·요청사항을 확인합니다.", "점포에서 내용을 확인한 주문은 확인 표시를 누릅니다. 신규 상태에서 벗어나면 미확인 알림 대상에서 제외됩니다.", "삭제한 주문은 삭제 내역 보기를 체크한 뒤 선택하고 복원할 수 있습니다."], "확인 표시는 점포의 내역 확인 처리입니다. 고객과 메뉴·시간 변경 협의가 필요하면 별도로 연락하세요. 주문 삭제 전 접수번호를 확인하세요.", [["예약일자 · 전체 날짜", "새로고침 / 삭제 내역 보기 □"], ["예시 고객 · LAG001 · 신규", "제공 17:00 / 메뉴 · 옵션 · 수량 · 요청사항"], ["확인 표시 / 삭제", "삭제 내역 보기 → 해당 내역 선택 → 복원"]]], ["receipt", "주문서 보기", "선주문 내역 → 내역 선택 → 내역 출력", ["선주문 내역에서 확인할 주문을 선택합니다.", "내역 출력을 누르면 화면 가운데 주문서가 열립니다. 프린터 연결 없이 태블릿에서 볼 수 있습니다.", "예약일자·메뉴 제공 시간·메뉴 수량·선택 옵션과 요청사항을 확인합니다. 긴 주문서는 아래로 스크롤합니다.", "주문서를 닫으면 내역 화면으로 돌아갑니다."], "주문서의 옵션 수량까지 확인하세요. 주문서 열기만으로는 확인 표시가 처리되지 않습니다.", [["≪ 선 주 문 서 ≫", "예시 접수번호 LAG001 / 예약일자"], ["메뉴 제공 시간 : 17:00", "티본 스테이크 × 1 / 선택 사이드 × 2"], ["화면 중앙 주문서", "스크롤로 전체 확인 → 닫기"]]], ["alerts", "화면 알림·태블릿 푸시", "상단 화면 알림 켜기 / 선주문 내역 → 태블릿 알림 등록", ["화면 알림 켜기를 누르면 미확인 선주문을 확인하고 배너와 소리·음성으로 안내합니다. 브라우저와 기기에서 소리를 허용하세요.", "알림 설정은 같은 브라우저에 보관됩니다. 다시 로그인한 뒤 알림 상태를 확인하세요. 브라우저 정책상 소리가 막히면 버튼을 직접 눌러 다시 활성화합니다.", "신규 주문을 확인한 뒤 선주문 내역에서 확인 표시를 누르면 해당 주문은 미확인 알림 대상에서 제외됩니다.", "태블릿 푸시는 선주문 내역의 태블릿 알림 등록에서 별도로 등록합니다. 새 기기로 등록하면 기존 등록 기기를 대체합니다."], "화면 알림은 약 30초마다 확인합니다. 관리자 화면이 열려 있어야 하며, 백그라운드·화면 꺼짐·절전 상태에서는 브라우저가 실행을 제한할 수 있습니다. 푸시 소리와 배너는 기기·브라우저 설정에도 영향을 받습니다.", [["화면 알림 켜기", "같은 브라우저에 설정 보관 / 소리 허용"], ["미확인 선주문 1건", "선주문 내역 보기 → 확인 표시"], ["태블릿 알림 등록", "별도 푸시 등록 / 마지막 등록 기기 1대"]]], ["help", "문제 해결·로그아웃", "저장·로그인·알림이 원활하지 않을 때", ["저장이 실패하면 하단 상태 안내를 먼저 읽고 작성 내용을 임시 저장 또는 백업합니다. 다른 관리자가 수정했다면 최신 내용을 불러와 확인합니다.", "로그인 16시간 후에는 재로그인이 필요합니다. 저장 실패 시 작성 내용을 보관하고 로그인한 뒤 최종 등록·저장을 다시 누릅니다.", "고객 화면이 이전 내용이면 저장 성공 여부와 판매 표시를 확인하고 새로고침합니다. 이미 열린 고객 화면의 동기화에는 시간이 걸릴 수 있습니다.", "사용이 끝난 공용 기기에서는 로그아웃을 누릅니다. 다시 사용할 때 로그인 후 화면 알림 상태를 확인하세요."], "비밀번호·백업 파일·고객 주문 정보는 점포 업무 담당자만 관리하세요. 문제가 계속되면 오류 문구와 발생 화면을 함께 본사 담당자에게 전달하세요.", [["저장 실패 안내 확인", "임시 저장 / 백업 → 원인 확인"], ["인증 만료", "다시 로그인 → 최종 등록·저장 재실행"], ["로그아웃", "현재 관리자 세션 종료 / 화면 알림 중지"]]]];
+let currentManualTopic='start';
+function manualSvgText(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));}
+function manualExample(topic){
+ const esc=manualSvgText;
+ let svg='<svg xmlns="http://www.w3.org/2000/svg" width="720" height="350" viewBox="0 0 720 350"><rect width="720" height="350" rx="12" fill="#faf9f6"/><path d="M12 0H708Q720 0 720 12V48H0V12Q0 0 12 0" fill="#263429"/><text x="22" y="31" fill="white" font-family="Arial, sans-serif" font-size="17" font-weight="bold">LAGRILLIA · 관리자</text><text x="22" y="78" fill="#263429" font-family="Arial, sans-serif" font-size="19" font-weight="bold">'+esc(topic[1])+'</text>';
+ topic[5].forEach((row,i)=>{const y=98+i*78;svg+='<rect x="22" y="'+y+'" width="676" height="66" rx="7" fill="white" stroke="#dfded6"/><circle cx="47" cy="'+(y+24)+'" r="13" fill="#fa6a12"/><text x="47" y="'+(y+29)+'" text-anchor="middle" fill="white" font-size="15" font-family="Arial">'+(i+1)+'</text><text x="72" y="'+(y+26)+'" fill="#263429" font-size="17" font-family="Arial, sans-serif" font-weight="bold">'+esc(row[0])+'</text><text x="72" y="'+(y+49)+'" fill="#666" font-size="15" font-family="Arial, sans-serif">'+esc(row[1])+'</text>';});
+ return svg+'</svg>';
+}
+function showManualTopic(id){
+ const topic=adminManualTopics.find(t=>t[0]===id)||adminManualTopics[0];currentManualTopic=topic[0];
+ const menu=$('manualMenu');menu.replaceChildren();
+ adminManualTopics.forEach(t=>{const b=document.createElement('button');b.type='button';b.textContent=t[1];b.setAttribute('aria-pressed',String(t[0]===currentManualTopic));b.onclick=()=>showManualTopic(t[0]);menu.append(b);});
+ const article=$('manualArticle');article.replaceChildren();
+ const title=document.createElement('h3');title.textContent=topic[1];article.append(title);
+ const path=document.createElement('p');path.className='manual-path';path.textContent=topic[2];article.append(path);
+ const img=document.createElement('img');img.className='manual-example';img.alt=topic[1]+' 화면 구성 예시';img.width=720;img.height=350;img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(manualExample(topic));article.append(img);
+ const caption=document.createElement('p');caption.className='manual-example-label';caption.textContent='화면 구성 예시 · 설명을 위한 요약 이미지이며 실제 주문 데이터가 아닙니다.';article.append(caption);
+ const list=document.createElement('ol');list.className='manual-steps';topic[3].forEach(text=>{const li=document.createElement('li');li.textContent=text;list.append(li);});article.append(list);
+ const note=document.createElement('p');note.className='manual-note';note.textContent=topic[4];article.append(note);
+}
+
+</script></body></html>
