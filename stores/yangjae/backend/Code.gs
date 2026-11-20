@@ -210,7 +210,14 @@ function saveMenuOrder(token,input) {
   const current=orderedCategoryMenus_(db.menus,category);
   const byId=new Map(current.map(menu=>[String(menu['메뉴ID']),menu]));
   if(current.length!==ids.length||ids.some(id=>!byId.has(id)))throw Error('메뉴 목록이 변경되었습니다. 최신 목록을 불러오세요.');
-  if(ids.some((id,index)=>String(byId.get(id)['섹션']||'').trim()!==String(current[index]['섹션']||'').trim()))throw Error('같은 구분 안에서만 순서를 변경할 수 있습니다.');
+  const seenSections=new Set();let previousSection=null;
+  for(const id of ids){
+   const section=String(byId.get(id)['섹션']||'').trim();
+   if(section!==previousSection){
+    if(seenSections.has(section))throw Error('같은 구분의 메뉴는 한 묶음으로 유지해 주세요.');
+    seenSections.add(section);previousSection=section;
+   }
+  }
   change=menuOrderColumn_(db.tables[0],ids);
   change.range.setValues(change.after);SpreadsheetApp.flush();
   return {revision:readDb_().revision};
