@@ -15,7 +15,7 @@ function appendPrepared_(table,objects,writes){if(!objects.length)return;const h
 function asset_(url,name){return url|| (name?'https://newleave8.github.io/lagrillia-menu/assets/'+encodeURIComponent(name):'')}
 function detailFields_(m){const raw=String(m['상세설명']||'');const match=raw.match(/\[\s*알레르기\s*정보\s*(?::\s*([^\]]*))?\]\s*([\s\S]*)$/);return {detail:match?raw.slice(0,match.index).trimEnd():raw,allergens:String(m['알레르기정보']||(match?(match[1]||match[2]||'').trim():'')),origin:String(m['원산지']||'')}}
 function spicyName_(name,level){const n=Number(level);return String(name||'')+(Number.isInteger(n)&&n>0&&n<=3?' '+'🔥'.repeat(n):'')}
-function publicCatalog_(){const db=readDb_(),groups=db.groups,items=db.items;const categories=categorySettings_(),wineCategories=wineCategories_(),preorderOpen=preorderOpen_();return {schemaVersion:3,categories,wineCategories,preorderOpen,revision:String(preorderOpen)+'-'+db.revision+'-display-v1-'+hashRecords_([categories,wineCategories]),menus:db.menus.filter(m=>m['메뉴ID']).map(m=>({id:String(m['메뉴ID']),category:m['카테고리'],section:m['섹션'],sweetness:wineRating_(m['당도']),body:wineRating_(m['바디']),name:spicyName_(m['메뉴명'],m['매운맛']),plainName:m['메뉴명'],en:m['영문명'],price:m['판매가(원)']===''?null:Number(m['판매가(원)']),tag:m['배지'],discounted:m['할인제품']==='Y',originalPrice:m['할인제품']==='Y'?Number(m['정상가(원)'])||null:null,spicy:Number(m['매운맛'])||0,listDesc:m['간단설명'],detail:detailFields_(m).detail,origin:detailFields_(m).origin,allergens:detailFields_(m).allergens,imageUrl:asset_(m['이미지URL'],m['이미지파일명']),caption:m['이미지하단문구'],active:String(m['판매여부']).toUpperCase()==='Y',order:Number(m['노출순서'])||9999,options:ids_(m['옵션그룹ID']).flatMap(id=>groups.filter(g=>g['옵션그룹ID']===id&&g['사용여부']!=='N').map(g=>({id,name:g['그룹명'],min:Number(g['최소선택'])||0,max:Number(g['최대선택'])||0,allowDuplicate:g['중복선택허용']==='Y',items:items.filter(o=>o['옵션그룹ID']===id&&o['사용여부']!=='N').sort((a,b)=>Number(a['노출순서'])-Number(b['노출순서'])).map(o=>({id:o['옵션ID'],name:spicyName_(o['옵션명'],o['매운맛']),plainName:o['옵션명'],extra:Number(o['추가금액(원)'])||0,spicy:Number(o['매운맛'])||0,imageUrl:asset_(o['이미지URL'],o['이미지파일명'])}))})))})).sort((a,b)=>a.order-b.order)}}
+function publicCatalog_(){const db=readDb_(),groups=db.groups,items=db.items;const categories=categorySettings_(),wineCategories=wineCategories_(),preorderOpen=preorderOpen_();return {schemaVersion:3,categories,wineCategories,preorderOpen,revision:String(preorderOpen)+'-'+db.revision+'-display-v1-'+hashRecords_([categories,wineCategories]),menus:db.menus.filter(m=>m['메뉴ID']&&!menuDeleted_(m)).map(m=>({id:String(m['메뉴ID']),category:m['카테고리'],section:m['섹션'],sweetness:wineRating_(m['당도']),body:wineRating_(m['바디']),name:spicyName_(m['메뉴명'],m['매운맛']),plainName:m['메뉴명'],en:m['영문명'],price:m['판매가(원)']===''?null:Number(m['판매가(원)']),tag:m['배지'],discounted:m['할인제품']==='Y',originalPrice:m['할인제품']==='Y'?Number(m['정상가(원)'])||null:null,spicy:Number(m['매운맛'])||0,listDesc:m['간단설명'],detail:detailFields_(m).detail,origin:detailFields_(m).origin,allergens:detailFields_(m).allergens,imageUrl:asset_(m['이미지URL'],m['이미지파일명']),caption:m['이미지하단문구'],active:String(m['판매여부']).toUpperCase()==='Y',order:Number(m['노출순서'])||9999,options:ids_(m['옵션그룹ID']).flatMap(id=>groups.filter(g=>g['옵션그룹ID']===id&&g['사용여부']!=='N').map(g=>({id,name:g['그룹명'],min:Number(g['최소선택'])||0,max:Number(g['최대선택'])||0,allowDuplicate:g['중복선택허용']==='Y',items:items.filter(o=>o['옵션그룹ID']===id&&o['사용여부']!=='N').sort((a,b)=>Number(a['노출순서'])-Number(b['노출순서'])).map(o=>({id:o['옵션ID'],name:spicyName_(o['옵션명'],o['매운맛']),plainName:o['옵션명'],extra:Number(o['추가금액(원)'])||0,spicy:Number(o['매운맛'])||0,imageUrl:asset_(o['이미지URL'],o['이미지파일명'])}))})))})).sort((a,b)=>a.order-b.order)}}
 function doGet(e){if(e?.parameter?.page==='preorder-switch')return preorderSwitchPage_(e.parameter);if(e?.parameter?.page==='checkout')return checkoutPage_(e.parameter.channel);if(e?.parameter?.page==='admin')return HtmlService.createHtmlOutputFromFile('Admin').setTitle('라그릴리아 관리자').addMetaTag('viewport','width=device-width,initial-scale=1');const cb=String(e?.parameter?.callback||'');if(cb&&cb!=='lagMenuCallback')throw Error('잘못된 callback');const payload=publicCatalog_();const json=JSON.stringify(payload).replace(/</g,'\\u003c').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029');return ContentService.createTextOutput(cb?cb+'('+json+');':json).setMimeType(cb?ContentService.MimeType.JAVASCRIPT:ContentService.MimeType.JSON)}
 function signin(pin){const lock=LockService.getUserLock();if(!lock.tryLock(5000))throw Error('로그인 처리 중입니다. 잠시 후 다시 시도하세요.');try{const c=CacheService.getScriptCache(),key='signin-attempts',n=Number(c.get(key)||0);if(n>=10)throw Error('로그인 시도 제한. 5분 후 다시 시도하세요');const correct=PropertiesService.getScriptProperties().getProperty('ADMIN_PIN');if(!correct)throw Error('관리자 비밀번호를 서버 속성에 설정하세요');if(String(pin)!==correct){c.put(key,String(n+1),300);throw Error('관리자 인증 실패')}c.remove(key);const token=Utilities.getUuid()+Utilities.getUuid();const props=PropertiesService.getScriptProperties();const now=Date.now();const sessions=props.getProperties();for(const key of Object.keys(sessions)){if(key.startsWith('admin-session:')&&Number(sessions[key])<=now)props.deleteProperty(key)}props.setProperty('admin-session:'+token,String(now+ADMIN_SESSION_MS));return token}finally{lock.releaseLock()}}
 const ADMIN_SESSION_MS = 16 * 60 * 60 * 1000;
@@ -31,7 +31,7 @@ function signout(token){
  CacheService.getScriptCache().remove('auth:'+token);
  return true;
 }
-function loadAdmin(token){requireAuth_(token);const lock=writeLock_();try{const db=readDb_();return {menus:db.menus,groups:db.groups,items:db.items,categories:categorySettings_(),wineCategories:wineCategories_(),revision:db.revision}}finally{lock.releaseLock()}}
+function loadAdmin(token){requireAuth_(token);const lock=writeLock_();try{const db=readDb_();return {menus:db.menus.filter(m=>!menuDeleted_(m)),deletedMenus:db.menus.filter(menuDeleted_),groups:db.groups,items:db.items,categories:categorySettings_(),wineCategories:wineCategories_(),revision:db.revision}}finally{lock.releaseLock()}}
 function text_(v,max){const s=String(v??'');if(s.length>(max||5000))throw Error('입력 길이 초과');return s}
 function number_(v,label,max){if(v===''||v===null||v===undefined||!Number.isSafeInteger(Number(v))||Number(v)<0||Number(v)>(max||10000000))throw Error(label+' 입력 오류');return Number(v)}
 function url_(v){v=text_(v,2000);if(v&&!/^https:\/\/(?:drive\.google\.com|lh3\.googleusercontent\.com|newleave8\.github\.io)\//.test(v))throw Error('허용되지 않은 사진 주소');return v}
@@ -64,6 +64,7 @@ function saveAdmin(token,input){requireAuth_(token);if(!input?.menu)throw Error(
  }
  const headers=table.values[0],key=headers.indexOf('메뉴ID'),idx=table.values.findIndex((r,i)=>i>0&&String(r[key])===id);
  if(d.id&&idx<1)throw Error('기존 메뉴를 찾을 수 없습니다');
+ if(idx>0&&menuDeleted_(db.menus.find(m=>String(m['메뉴ID'])===id)||{}))throw Error('삭제된 메뉴입니다. 삭제 목록에서 복원한 뒤 수정하세요.');
  // Append complete option batches; switch the menu reference only after both are flushed.
  appendPrepared_(db.tables[1],groupRows,writes);appendPrepared_(db.tables[2],itemRows,writes);SpreadsheetApp.flush();
  const row=headers.map((h,i)=>Object.hasOwnProperty.call(value,h)?safeCell_(value[h]):idx>0?table.values[idx][i]:'');
@@ -166,7 +167,7 @@ function updateWineCategory(token,name,remove){
 
 // Keep category sections together and preserve the displayed order for equal values.
 function orderedCategoryMenus_(menus, category) {
- const sorted=menus.filter(menu=>menu['메뉴ID']&&String(menu['카테고리']||'')===category)
+ const sorted=menus.filter(menu=>menu['메뉴ID']&&!menuDeleted_(menu)&&String(menu['카테고리']||'')===category)
   .slice().sort((a,b)=>(Number(a['노출순서'])||9999)-(Number(b['노출순서'])||9999));
  const sections=new Map();
  for(const menu of sorted){
@@ -198,6 +199,40 @@ function menuOrderColumn_(table, ids) {
   before:rows.map(row=>[row[orderColumn]]),
   after:rows.map(row=>[positions.has(String(row[idColumn]))?positions.get(String(row[idColumn])):row[orderColumn]])};
 }
+function menuDeleted_(menu){return !!String(menu['삭제일시']||'').trim()}
+function changeMenuDeletion(token,input){
+ requireAuth_(token);
+ if(!input||typeof input.id!=='string'||!input.id||!['delete','restore'].includes(input.action))throw Error('메뉴와 작업을 확인하세요.');
+ const lock=writeLock_();let change=null;
+ try{
+  const db=readDb_();
+  if(input.revision!==db.revision)throw Error('다른 관리자가 변경했습니다. 최신 목록을 불러온 뒤 다시 시도하세요.');
+  const menu=db.menus.find(row=>String(row['메뉴ID'])===input.id);
+  if(!menu)throw Error('메뉴를 찾을 수 없습니다.');
+  const deleted=menuDeleted_(menu);
+  if(input.action==='delete'&&deleted)throw Error('이미 삭제된 메뉴입니다.');
+  if(input.action==='restore'&&!deleted)throw Error('이미 복원된 메뉴입니다.');
+  let table=db.tables[0];
+  if(!table.values[0].includes('삭제일시')){
+   const column=table.values[0].length+1;
+   if(column>table.sh.getMaxColumns())table.sh.insertColumnsAfter(table.sh.getMaxColumns(),column-table.sh.getMaxColumns());
+   table.sh.getRange(1,column).setValues([['삭제일시']]);
+   SpreadsheetApp.flush();table=readDb_().tables[0];
+  }
+  const headers=table.values[0],idColumn=headers.indexOf('메뉴ID'),activeColumn=headers.indexOf('판매여부'),deletedColumn=headers.indexOf('삭제일시');
+  const index=table.values.findIndex((row,i)=>i>0&&String(row[idColumn])===input.id);
+  if(index<1||activeColumn<0||deletedColumn<0)throw Error('메뉴 시트의 필수 열을 확인하세요.');
+  const before=[table.values[index].slice()],after=before[0].slice();
+  after[activeColumn]='N';after[deletedColumn]=input.action==='delete'?new Date().toISOString():'';
+  change={range:table.sh.getRange(index+1,1,1,headers.length),before};
+  change.range.setValues([after]);SpreadsheetApp.flush();
+  return {revision:readDb_().revision};
+ }catch(error){
+  if(change){try{change.range.setValues(change.before);SpreadsheetApp.flush()}catch(rollbackError){console.error('메뉴 삭제·복원 복구 실패: '+rollbackError.message)}}
+  throw error;
+ }finally{lock.releaseLock()}
+}
+
 function saveMenuOrder(token,input) {
  requireAuth_(token);
  if(!input||!Array.isArray(input.ids)||!input.ids.length||input.ids.length>5000)throw Error('순서를 변경할 메뉴를 확인하세요.');
