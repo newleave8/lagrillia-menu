@@ -213,7 +213,7 @@ window.lagMenuCallback=function(data){
  // Do not replace an in-progress selection; new opens use the latest catalog.
  render();
 };
-function refreshCatalog(){if(!window.menuBackend||catalogBusy||document.hidden)return;catalogBusy=true;const tag=document.createElement('script');const timer=setTimeout(cleanup,15000);function cleanup(){clearTimeout(timer);tag.remove();catalogBusy=false}tag.onload=cleanup;tag.onerror=cleanup;tag.src=window.menuBackend+'?callback=lagMenuCallback&t='+Date.now();document.head.append(tag)}
+function refreshCatalog(){if(!window.menuBackend||catalogBusy||document.hidden)return;catalogBusy=true;const tag=document.createElement('script');const timer=setTimeout(cleanup,45000);function cleanup(){clearTimeout(timer);tag.remove();catalogBusy=false}tag.onload=cleanup;tag.onerror=cleanup;tag.src=window.menuBackend+'?callback=lagMenuCallback&t='+Date.now();document.head.append(tag)}
 fetch('backend-config.json?t='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('config');return r.json()}).then(c=>{if(!/^https:\/\/script\.google\.com\/macros\/s\/[a-zA-Z0-9_-]+\/exec$/.test(c.url))throw Error('endpoint');window.menuBackend=c.url;refreshCatalog();setInterval(refreshCatalog,30000);document.addEventListener('visibilitychange',refreshCatalog)}).catch(()=>{});
 </script><script>
 let switchChannel='';
