@@ -27,6 +27,8 @@ jobs:
           cp spc-square/index.html spc-square/admin.html spc-square/backend-config.json spc-square/tablet-alerts.html spc-square/preorder-push-worker.js _site/spc-square/
           mkdir -p _site/yangjae
           cp yangjae/index.html yangjae/admin.html yangjae/backend-config.json yangjae/tablet-alerts.html yangjae/preorder-push-worker.js _site/yangjae/
+          mkdir -p _site/gongdeok
+          cp gongdeok/index.html gongdeok/admin.html gongdeok/backend-config.json gongdeok/tablet-alerts.html gongdeok/preorder-push-worker.js _site/gongdeok/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
