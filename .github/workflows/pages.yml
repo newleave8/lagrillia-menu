@@ -29,6 +29,12 @@ jobs:
           cp yangjae/index.html yangjae/admin.html yangjae/backend-config.json yangjae/tablet-alerts.html yangjae/preorder-push-worker.js _site/yangjae/
           mkdir -p _site/gongdeok
           cp gongdeok/index.html gongdeok/admin.html gongdeok/backend-config.json gongdeok/tablet-alerts.html gongdeok/preorder-push-worker.js _site/gongdeok/
+          mkdir -p _site/cheonho
+          cp cheonho/index.html cheonho/admin.html cheonho/backend-config.json cheonho/tablet-alerts.html cheonho/preorder-push-worker.js _site/cheonho/
+          mkdir -p _site/garden-five
+          cp garden-five/index.html garden-five/admin.html garden-five/backend-config.json garden-five/tablet-alerts.html garden-five/preorder-push-worker.js _site/garden-five/
+          mkdir -p _site/dogok
+          cp dogok/index.html dogok/admin.html dogok/backend-config.json dogok/tablet-alerts.html dogok/preorder-push-worker.js _site/dogok/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site

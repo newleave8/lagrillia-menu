@@ -4,5 +4,6 @@
   "phone": "02-3463-8100",
   "spreadsheetId": "1cEaYue3kThV80LZKjLGbLNvzyENN6IZnjWYZmY80QXs",
   "scriptId": "1B4hFx7D2fpYntSoEDTg4oqjhkvKwS02G0Cuuabovi0OKelWQ1-lx_9EI",
-  "state": "pending-authorization-and-deployment"
+  "state": "deployed",
+  "deploymentUrl": "https://script.google.com/macros/s/AKfycbzklgoI8RfjxfIvuhFg2PEnxdSCJrKMKS_MqKzYdsPHJ_PDvOZ5dggCcjNV5Mq7Lt2E/exec"
 }
